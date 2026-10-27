@@ -60,3 +60,5 @@ function quicarNoInimigo() {
   jogador.vy = -fase.pulo * ESPADA_FATOR_POGO;
   jogador.noChao = false;
 }
+
+pontosInimigosPendentes += 300;

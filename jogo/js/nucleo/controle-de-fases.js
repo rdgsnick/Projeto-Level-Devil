@@ -1,7 +1,16 @@
 // =====================================================================
 //  CONTROLE DE FASES: carregar, morrer, reiniciar e passar de fase
 // =====================================================================
+let inimigosOriginaisFase = [];
 
+function restaurarListaOriginalDeInimigos() {
+  fase.inimigos = [];
+  fase.filaInimigos = JSON.parse(
+    JSON.stringify(inimigosOriginaisFase)
+  );
+
+  prepararInimigos();
+}
 function carregarFase(numero) {
   numeroFase = numero;
 
@@ -33,7 +42,13 @@ function carregarFase(numero) {
 
   // Monta a fila de inimigos da fase e coloca os primeiros na tela (veja inimigos/geracao.js)
   gerarInimigosAleatorios();
-  prepararInimigos();
+
+// Guarda a lista exata de inimigos desta fase.
+inimigosOriginaisFase = JSON.parse(
+  JSON.stringify(fase.filaInimigos)
+);
+
+prepararInimigos();
 
   mortesNaFase = 0;
   inicioDaFase = performance.now();
@@ -90,28 +105,36 @@ function morrer() {
 // e o gato reaparece no início.
 function renascer() {
   resetarArmadilhas();
-  resetarInimigos();
+  restaurarListaOriginalDeInimigos();
   resetarPorta();
   resetarEspada();
   criarJogador();
-  if (CONGELAR_AO_RENASCER) congelarFase();
+
+  if (CONGELAR_AO_RENASCER) {
+    congelarFase();
+  }
 }
 
 // Recarrega a fase do zero (tudo escondido de novo). Conta como morte
 // e o tempo da fase NÃO zera, pra ninguém ganhar ponto à toa.
 function reiniciarFase() {
   if (!jogando) return;
-  if (jogador.morto) return;          // espera a animação de morte terminar
-  const mortesGuardadas = mortesNaFase + 1;
+  if (jogador.morto) return;
+
   const inicioGuardado = inicioDaFase;
+
+  const inimigosGuardados = JSON.parse(
+    JSON.stringify(inimigosOriginaisFase)
+  );
 
   carregarFase(numeroFase);
 
-  mortesNaFase = mortesGuardadas;
-  inicioDaFase = inicioGuardado;
-  mortesTotais++;
-}
+  inimigosOriginaisFase = inimigosGuardados;
+  restaurarListaOriginalDeInimigos();
 
+  // Mantém o contador de mortes inalterado.
+  inicioDaFase = inicioGuardado;
+}
 function passarDeFase() {
   const segundos = (performance.now() - inicioDaFase) / 1000;
   let pontos = PONTOS_POR_FASE - segundos * PERDA_POR_SEGUNDO - mortesNaFase * PERDA_POR_MORTE;
