@@ -30,8 +30,11 @@ const ANIMACOES_JOGADOR = {
   pulando:         carregarImagens(['img/gato/gato1.png']),
   agachado:        carregarImagens(['img/gato/agachado.png']),
   agachadoAndando: carregarImagens(['img/gato/agachado.png']),
-  morto:           carregarImagens(['img/gato/morto.png'])
+  morto:           carregarImagens(['img/gato/morto.png']),
+  ataquePreparo:   carregarImagens(['img/gato/ataque1.png']),   // puxando a espada
+  ataqueGolpe:     carregarImagens(['img/gato/ataque2.png'])    // golpeando
 };
+
 
 function criarJogador() {
   const agachado = (fase.agachado === true);                // fase "agachada": já nasce agachado
@@ -247,7 +250,10 @@ function atualizarAnimacaoJogador() {
   if (jogador.agachado) {
     nova = (jogador.noChao && jogador.vx !== 0) ? 'agachadoAndando' : 'agachado';
   }
-
+  // batendo com a espada: o gato muda de pose (puxa a espada -> golpeia). Agachado mantém o desenho agachado.
+  if (espada.tempo > 0 && !jogador.agachado) {
+    nova = espada.tempo < ESPADA_HITBOX_INICIO ? 'ataquePreparo' : 'ataqueGolpe';
+  }
   if (nova !== jogador.animacao) {
     jogador.animacao = nova;        // trocou de animação: recomeça do primeiro desenho
     jogador.tempoAnimacao = 0;

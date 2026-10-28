@@ -56,7 +56,7 @@ const ESPADA_DURACAO = 14;          // frames que a animação do golpe dura
 const ESPADA_INTERVALO = 20;        // frames até poder bater de novo
 const ESPADA_HITBOX_INICIO = 4;     // a espada só machuca entre estes dois frames do golpe...
 const ESPADA_HITBOX_FIM = 10;       // ...(o começo e o fim do golpe são só animação)
-const ESPADA_DESENHO_INICIO = 2;    // a espada só aparece desenhada entre estes dois frames
+const ESPADA_DESENHO_INICIO = 4;    // o arco da espada só aparece desenhado entre estes dois frames (começa junto com a hitbox)
 const ESPADA_DESENHO_FIM = 12;
 const ESPADA_ALTURA_CENTRO = 0.48;  // em que altura do corpo a espada é desenhada e bate (0 = cabeça, 1 = pés)
 const ESPADA_ALCANCE_LADO = 90;     // golpe pro lado: comprimento (era 58)

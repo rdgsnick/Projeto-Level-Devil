@@ -120,6 +120,8 @@ function espadaAcerta(alvo) {
 //  O desenho é esticado na proporção do alcance configurado, então ele sempre
 //  mostra até onde o golpe realmente acerta.
 // ---------------------------------------------------------------------
+const IMAGEM_ARCO_ESPADA = obterImagem('img/gato/espada_arco.png');   // o arco dourado do golpe
+
 const DESENHO_BASE_ALCANCE_LADO = 70;       // 12 (meio do gato até a borda) + 58 (alcance antigo)
 const DESENHO_BASE_ALCANCE_VERTICAL = 73;   // 15 (meio do gato até a borda) + 58 (alcance antigo)
 
@@ -141,6 +143,12 @@ function desenharAtaqueEspada() {
   const centroX = jogador.x + jogador.largura / 2;
   const centroY = alturaCentroEspada();
 
+  // desenho novo (se a imagem não carregou, cai no desenho antigo logo abaixo)
+  if (imagemPronta(IMAGEM_ARCO_ESPADA)) {
+    desenharArcoDaEspada(centroX, centroY);
+    return;
+  }
+
   ctx.save();
   ctx.translate(centroX, centroY);
   ctx.lineCap = 'round';
@@ -156,6 +164,29 @@ function desenharAtaqueEspada() {
     desenharEspadaLateral();
   }
 
+  ctx.restore();
+}
+
+// O arco dourado do golpe: nasce no gato e é esticado até o alcance REAL da espada
+// (então o que você vê é até onde o golpe acerta).
+function desenharArcoDaEspada(centroX, centroY) {
+  const progresso = (espada.tempo - ESPADA_DESENHO_INICIO) / (ESPADA_DESENHO_FIM - ESPADA_DESENHO_INICIO);   // 0 -> 1
+  const vertical = espada.direcao === 'cima' || espada.direcao === 'baixo';
+  const comprimento = vertical ? jogador.altura / 2 + ESPADA_ALCANCE_VERTICAL : jogador.largura / 2 + ESPADA_ALCANCE_LADO;
+  const espessura = vertical ? ESPADA_LARGURA_VERTICAL : ESPADA_ALTURA_LADO;
+  const crescer = 0.7 + 0.3 * Math.min(1, progresso * 3);       // abre rapidinho
+
+  ctx.save();
+  ctx.globalAlpha = Math.min(1, (1 - progresso) * 2.5);          // some no final
+  ctx.translate(centroX, centroY);
+  if (espada.direcao === 'cima') {
+    ctx.rotate(-Math.PI / 2);
+  } else if (espada.direcao === 'baixo') {
+    ctx.rotate(Math.PI / 2);
+  } else {
+    ctx.scale(jogador.virado, 1);                                // espelha conforme o lado pra onde o gato olha
+  }
+  ctx.drawImage(IMAGEM_ARCO_ESPADA, 0, -espessura * 0.7, comprimento * crescer, espessura * crescer);
   ctx.restore();
 }
 
