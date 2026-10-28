@@ -8,3 +8,5 @@ Jogo de plataforma estilo Level Devil, feito só com HTML, CSS e JavaScript.
 - A fase só começa quando o gato se mexer (anda, pula, dash, agacha ou ataca).
 
 Controles: setas/AD andar · espaço pular · Shift agachar · Q dash · clique esquerdo espada (W/S + clique = cima/baixo) · R reiniciar fase.
+
+Feito por: Gustavo Guimarães, Nicolas Camargo, Patrick Tomaz, Kassiane Dias, Anita Flores.
