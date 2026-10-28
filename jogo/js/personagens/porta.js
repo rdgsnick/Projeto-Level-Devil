@@ -40,5 +40,21 @@ function verificarPorta() {
 }
 
 function desenharPorta(porta) {
-  desenharRetangulo(porta, '#ffd60a');
+  var portal1 = obterImagem('img/porta/portal_frame_1.png');
+  var portal2 = obterImagem('img/porta/portal_frame_2.png');
+
+  var tempo = Math.floor(performance.now() / 250);
+  var portalAtual = tempo % 2 === 0 ? portal1 : portal2;
+
+  var largura = 50;
+  var altura = 100;
+
+  var x = porta.x + porta.largura / 2 - largura / 2;
+  var y = porta.y + porta.altura - altura;
+
+  if (imagemPronta(portalAtual)) {
+    ctx.drawImage(portalAtual, x, y, largura, altura);
+  } else {
+    desenharRetangulo(porta, '#ffd60a');
+  }
 }
