@@ -49,8 +49,16 @@ function verificarMorte() {
 function loopDoJogo() {
   if (!jogando) return;
 
-  atualizarJogo();
-  if (jogando) desenharJogo();      // o jogo pode ter acabado dentro do atualizarJogo()
+  if (transicao.ativa) {
+    atualizarTransicao();           // passando de fase: o jogo fica parado
+  } else {
+    atualizarJogo();
+  }
+
+  if (jogando) {                    // o jogo pode ter acabado dentro do update
+    desenharJogo();
+    desenharTransicao();            // por cima de tudo
+  }
 
   requestAnimationFrame(loopDoJogo);
 }

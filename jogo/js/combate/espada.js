@@ -24,6 +24,7 @@ const espada = {
 // ---------------------------------------------------------------------
 function iniciarAtaqueEspada() {
   if (!jogando || !jogador || jogador.morto) return;
+  if (transicao.ativa) return;   // <-- nova
   if (espada.recarga > 0 || espada.tempo > 0) return;
 
   if (teclas['w'] || teclas['arrowup']) {

@@ -120,6 +120,7 @@ function renascer() {
 function reiniciarFase() {
   if (!jogando) return;
   if (jogador.morto) return;
+  if (transicao.ativa) return;   
 
   const inicioGuardado = inicioDaFase;
 
@@ -136,6 +137,7 @@ function reiniciarFase() {
   inicioDaFase = inicioGuardado;
 }
 function passarDeFase() {
+  if (transicao.ativa) return;      // já está passando de fase
   const segundos = (performance.now() - inicioDaFase) / 1000;
   let pontos = PONTOS_POR_FASE - segundos * PERDA_POR_SEGUNDO - mortesNaFase * PERDA_POR_MORTE;
   pontos = Math.round(pontos);
@@ -144,9 +146,6 @@ function passarDeFase() {
   }
   pontosTotais = pontosTotais + pontos;
 
-  if (numeroFase + 1 < FASES.length) {
-    carregarFase(numeroFase + 1);
-  } else {
-    terminarJogo();
-  }
+  // A troca de fase acontece dentro da transição (veja transicao.js)
+  iniciarTransicao(numeroFase + 1, pontos);
 }

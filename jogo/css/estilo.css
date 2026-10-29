@@ -7,3 +7,49 @@ button{background:#e63946;color:#fff;cursor:pointer}
 ol{display:inline-block;text-align:left}
 #erro{color:#ff6b6b;height:20px}
 #btnReiniciar{display:none;margin-top:10px;background:#444}
+#transicao-fase {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #000;
+    color: #fff;
+    font-family: "Courier New", monospace;
+    text-align: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.5s ease;
+  }
+  
+  #transicao-fase.ativa {
+    opacity: 1;
+    pointer-events: all;
+  }
+  
+  #transicao-fase .tf-titulo {
+    font-size: clamp(32px, 8vw, 72px);
+    font-weight: bold;
+    letter-spacing: 4px;
+    transform: scale(0.8);
+    opacity: 0;
+    transition: transform 0.5s ease, opacity 0.5s ease;
+  }
+  
+  #transicao-fase .tf-sub {
+    margin-top: 12px;
+    font-size: clamp(14px, 3vw, 24px);
+    color: #ff4d4d;
+    opacity: 0;
+    transition: opacity 0.5s ease 0.2s;
+  }
+  
+  #transicao-fase.ativa .tf-titulo {
+    transform: scale(1);
+    opacity: 1;
+  }
+  
+  #transicao-fase.ativa .tf-sub {
+    opacity: 1;
+  }
