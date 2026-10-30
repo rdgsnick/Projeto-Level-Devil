@@ -27,19 +27,56 @@ function desenharChao(r) {
   ctx.fillRect(r.x, r.y + Math.min(8, r.altura) - 2, r.largura, 2);
 }
 
+// Imagem da pedra (se você mudar a pasta ou o nome, é só trocar aqui)
+const PEDRA_IMAGEM = 'img/cenario/pedra.png';
+
 // Bloco de pedra (usado nos tetos baixos e nas paredes)
+// A pedra do desenho aparece inteira, e se o bloco for largo ela se repete lado a lado
 function desenharPedra(r) {
-  ctx.fillStyle = '#6b6b78';
-  ctx.fillRect(r.x, r.y, r.largura, r.altura);
-  ctx.strokeStyle = '#3d3d48';
-  ctx.lineWidth = 2;
-  ctx.strokeRect(r.x + 1, r.y + 1, r.largura - 2, r.altura - 2);
+  const imagem = obterImagem(PEDRA_IMAGEM);
+
+  if (imagemPronta(imagem)) {
+    // Base escura, pra não ficar buraco nos cantos entre uma pedra e outra
+    ctx.fillStyle = '#3d3745';
+    ctx.fillRect(r.x, r.y, r.largura, r.altura);
+
+    // Quantas pedras cabem na largura do bloco, sem esticar demais
+    const proporcao = imagem.naturalWidth / imagem.naturalHeight;
+    const quantas = Math.max(1, Math.round(r.largura / (r.altura * proporcao)));
+    const larguraCada = r.largura / quantas;
+
+    ctx.save();
+    ctx.imageSmoothingEnabled = false;         // mantém o pixel art nítido
+    for (let i = 0; i < quantas; i++) {
+      ctx.drawImage(imagem, r.x + i * larguraCada, r.y, larguraCada, r.altura);
+    }
+    ctx.restore();
+  } else {
+    // Plano B: bloco cinza liso, caso a imagem não carregue
+    ctx.fillStyle = '#6b6b78';
+    ctx.fillRect(r.x, r.y, r.largura, r.altura);
+    ctx.strokeStyle = '#3d3d48';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(r.x + 1, r.y + 1, r.largura - 2, r.altura - 2);
+  }
 }
+
+// Plataforma da fase: terra com grama, ou pedra se tiver  estilo: 'pedra'
+function desenharPlataforma(p) {
+  if (p.estilo === 'pedra') {
+    desenharPedra(p);
+  } else {
+    desenharChao(p);
+  }
+}
+
+// Imagem do espinho (se você mudar a pasta ou o nome, é só trocar aqui)
+const ESPINHO_IMAGEM = 'img/cenario/espinho.png';
 
 // Desenha a imagem do espinho. Retorna false se a imagem ainda não carregou.
 // paraBaixo = true vira a imagem de cabeça pra baixo (espinhos do teto)
 function desenharSpriteDeEspinho(a, paraBaixo) {
-  const imagem = obterImagem('img/espinho/espinho.png');
+  const imagem = obterImagem(ESPINHO_IMAGEM);
   if (!imagemPronta(imagem)) return false;
 
   // Quantas imagens cabem na largura do espinho, sem esticar demais
@@ -92,6 +129,7 @@ function desenharEspinhosParaBaixo(a) {
     ctx.fill();
   }
 }
+
 function desenharEscuridao() {
   const centroX = jogador.x + jogador.largura / 2;
   const centroY = jogador.y + jogador.altura / 2;
