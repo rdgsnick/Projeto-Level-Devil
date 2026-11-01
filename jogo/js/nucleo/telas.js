@@ -45,7 +45,7 @@ function comecarJogo() {
 // Chamada quando o gato passa da ÚLTIMA fase: mostra a tela de vitória
 function terminarJogo() {
   jogando = false;
-  const posicao = salvarPontuacao();
+  const resultadoRanking = salvarPontuacao();
 
   botaoReiniciar.style.display = 'none';
   canvas.style.display = 'none';
@@ -58,8 +58,13 @@ function terminarJogo() {
     apelido + ': ' + pontosTotais + ' pontos, ' + mortesTotais + ' mortes';
 
   let textoPosicao = '';
-  if (posicao === 1) textoPosicao = '🥇 Novo recorde! Você é o 1º do ranking!';
-  else if (posicao > 0) textoPosicao = 'Você ficou em ' + posicao + 'º lugar no ranking!';
+  if (!resultadoRanking.salva) {
+    textoPosicao = 'Não foi possível salvar sua pontuação no ranking.';
+  } else if (resultadoRanking.posicao === 1) {
+    textoPosicao = '🥇 Novo recorde! Você é o 1º do ranking!';
+  } else if (resultadoRanking.posicao > 0) {
+    textoPosicao = 'Você ficou em ' + resultadoRanking.posicao + 'º lugar no ranking!';
+  }
   document.getElementById('fimPosicao').textContent = textoPosicao;
 
   mostrarRanking('rankFim');

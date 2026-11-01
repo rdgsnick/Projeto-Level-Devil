@@ -116,8 +116,8 @@ function renascer() {
   }
 }
 
-// Recarrega a fase do zero (tudo escondido de novo). Conta como morte
-// e o tempo da fase NÃO zera, pra ninguém ganhar ponto à toa.
+// Recarrega a fase do zero. O carregamento reinicia mortesNaFase, mas preserva
+// o tempo corrido e mortesTotais para a pontuação e o resultado final.
 function reiniciarFase() {
   if (!jogando) return;
   if (jogador.morto) return;
