@@ -13,13 +13,18 @@ function pegarRanking() {
 
 function salvarPontuacao() {
   const ranking = pegarRanking();
-  ranking.push({ nick: apelido, pontos: pontosTotais, mortes: mortesTotais });
+  const nova = { nick: apelido, pontos: pontosTotais, mortes: mortesTotais };
+  ranking.push(nova);
 
   // ordena do maior pro menor
   ranking.sort(function (a, b) { return b.pontos - a.pontos; });
 
   // guarda só os 10 melhores
   localStorage.setItem('trollDevilRanking', JSON.stringify(ranking.slice(0, 10)));
+
+  // devolve em que lugar o jogador ficou (1 = primeiro), ou 0 se ficou fora dos 10 melhores
+  const indice = ranking.indexOf(nova);
+  return indice >= 0 && indice < 10 ? indice + 1 : 0;
 }
 
 // Mostra os 5 melhores dentro de uma <ol> (idLista = id da lista no HTML)

@@ -1,7 +1,7 @@
 body{margin:0;background:#111;color:#eee;font-family:sans-serif;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh}
 canvas{background:#1c1c2b;border:2px solid #444;display:none}
 #menu,#fim{text-align:center}
-#fim{display:none}
+#fim{display:none;position:relative;z-index:2}
 input,button{font-size:18px;padding:8px 12px;margin:6px;border-radius:6px;border:0}
 button{background:#e63946;color:#fff;cursor:pointer}
 ol{display:inline-block;text-align:left}
@@ -53,3 +53,16 @@ ol{display:inline-block;text-align:left}
   #transicao-fase.ativa .tf-sub {
     opacity: 1;
   }
+
+/* ----- Tela de vitória ----- */
+#confete{position:fixed;inset:0;width:100%;height:100%;display:none;pointer-events:none;z-index:1}
+#fim #fimGato{height:120px;image-rendering:pixelated;animation:fimPulo 0.9s ease-in-out infinite}
+#fim #fimTitulo{font-size:clamp(36px,8vw,72px);letter-spacing:4px;margin:8px 0;color:#ffd60a;
+  text-shadow:0 0 18px rgba(255,214,10,.55),4px 4px 0 #8b1e2b;animation:fimEntrada .8s ease-out both}
+#fim #fimSub{max-width:480px;margin:0 auto 12px;color:#ccc}
+#fim #resultado{color:#fff;margin:10px 0 4px}
+#fim #fimPosicao{color:#ffd60a;font-weight:bold;min-height:22px;margin:0 0 8px}
+#fim.mostrar{animation:fimFade .6s ease-out both}
+@keyframes fimPulo{0%,100%{transform:translateY(0)}50%{transform:translateY(-14px)}}
+@keyframes fimEntrada{from{transform:scale(.4);opacity:0}to{transform:scale(1);opacity:1}}
+@keyframes fimFade{from{opacity:0}to{opacity:1}}

@@ -2,6 +2,8 @@
 //  TELAS: menu, início do jogo e tela final
 // =====================================================================
 function mostrarMenu() {
+  pararConfete();
+  telaFim.classList.remove('mostrar');
   botaoReiniciar.style.display = 'none';
   telaFim.style.display = 'none';
   canvas.style.display = 'none';
@@ -40,16 +42,28 @@ function comecarJogo() {
   loopDoJogo();
 }
 
+// Chamada quando o gato passa da ÚLTIMA fase: mostra a tela de vitória
 function terminarJogo() {
   jogando = false;
-  salvarPontuacao();
+  const posicao = salvarPontuacao();
 
   botaoReiniciar.style.display = 'none';
   canvas.style.display = 'none';
   telaFim.style.display = 'block';
+  telaFim.classList.remove('mostrar');
+  void telaFim.offsetWidth;                     // reinicia a animação de entrada
+  telaFim.classList.add('mostrar');
+
   document.getElementById('resultado').textContent =
     apelido + ': ' + pontosTotais + ' pontos, ' + mortesTotais + ' mortes';
+
+  let textoPosicao = '';
+  if (posicao === 1) textoPosicao = '🥇 Novo recorde! Você é o 1º do ranking!';
+  else if (posicao > 0) textoPosicao = 'Você ficou em ' + posicao + 'º lugar no ranking!';
+  document.getElementById('fimPosicao').textContent = textoPosicao;
+
   mostrarRanking('rankFim');
+  iniciarConfete();
 }
 
 // ----- Botões -----
