@@ -1,17 +1,18 @@
 // =====================================================================
-//  FASE 15 - Ilhas
+//  FASE 15 - Três saltos sobre ilhas; o meio some depois do pouso.
 // =====================================================================
 FASES.push({
-  nome: 'Ilhas',
+  nome: 'Arquipélago instável',
+  spawnAleatorioInimigos: true,
   porta: { x: 765, y: 350 },
   plataformas: [
-    { x: 0,   y: 400, largura: 120, altura: 50 },
-    { x: 200, y: 400, largura: 80,  altura: 50 },
-    { x: 520, y: 400, largura: 80,  altura: 50 },
-    { x: 680, y: 400, largura: 120, altura: 50 }
+    { x: 0, y: 400, largura: 130, altura: 50 },
+    { x: 220, y: 365, largura: 90, altura: 14 },
+    { x: 560, y: 365, largura: 90, altura: 14 },
+    { x: 710, y: 400, largura: 90, altura: 50 }
   ],
   armadilhas: [
-    { tipo: 'chaoQueSome', x: 360, y: 400, largura: 80, altura: 50, espera: 15 },
-    { tipo: 'espinho', x: 730, largura: 30 }
+    { tipo: 'chaoQueSome', x: 390, y: 335, largura: 90, altura: 14, espera: 18 },
+    { tipo: 'espinho', x: 740, largura: 30 }
   ]
 });

@@ -1,16 +1,16 @@
 // =====================================================================
-//  FASE 21 - Mini gato
-//  agachado: true -> o gato fica agachado a fase inteira (hitbox menor, anda mais devagar).
-//  O túnel de pedra tem só 22px de altura: o gato em pé (30px) não passa, agachado (18px) passa.
+//  FASE 21 - Túnel baixo com espaço seguro para passar agachado.
 // =====================================================================
 FASES.push({
-  nome: 'Passagem baixa',
+  nome: 'Túnel de pedra',
+  spawnAleatorioInimigos: true,
+  podeAgachar: true,
   plataformas: [
-    { x: 0,   y: 400, largura: 800, altura: 50 },
-    { x: 250, y: 330, largura: 300, altura: 46, estilo: 'pedra' }
+    { x: 0, y: 400, largura: 800, altura: 50 },
+    { x: 260, y: 315, largura: 280, altura: 58, estilo: 'pedra' }
   ],
   armadilhas: [
-    { tipo: 'espinho', x: 130 },
-    { tipo: 'espinho', x: 620 }
+    { tipo: 'espinho', x: 175, largura: 30 },
+    { tipo: 'espinho', x: 660, largura: 30 }
   ]
 });

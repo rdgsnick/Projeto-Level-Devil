@@ -13,6 +13,7 @@ function restaurarListaOriginalDeInimigos() {
 }
 function carregarFase(numero) {
   numeroFase = numero;
+  pontosInimigosPendentes = 0;
 
   // Faz uma CÓPIA da fase pra não estragar a original da lista FASES
   fase = JSON.parse(JSON.stringify(FASES[numero]));
@@ -144,7 +145,9 @@ function passarDeFase() {
   if (pontos < PONTOS_MINIMOS_POR_FASE) {
     pontos = PONTOS_MINIMOS_POR_FASE;
   }
+  pontos += pontosInimigosPendentes;
   pontosTotais = pontosTotais + pontos;
+  pontosInimigosPendentes = 0;
 
   // A troca de fase acontece dentro da transição (veja transicao.js)
   iniciarTransicao(numeroFase + 1, pontos);

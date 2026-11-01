@@ -1,11 +1,12 @@
 // =====================================================================
-//  FASE 6 - Corre!
+//  FASE 6 - O teto avisa antes de cair.
 // =====================================================================
 FASES.push({
-  nome: 'Corre!',
+  nome: 'Chuva de espinhos',
+  spawnAleatorioInimigos: true,
   armadilhas: [
-    { tipo: 'espinhoTeto', x: 250 },
-    { tipo: 'espinhoTeto', x: 450 },
-    { tipo: 'espinhoTeto', x: 620 }
+    { tipo: 'espinhoTeto', x: 260, ativarEm: 220 },
+    { tipo: 'espinhoTeto', x: 450, ativarEm: 410 },
+    { tipo: 'espinhoTeto', x: 640, ativarEm: 600 }
   ]
 });

@@ -1,16 +1,17 @@
 // =====================================================================
-//  FASE 9 - Pulando pedrinhas
+//  FASE 9 - Plataformas alternadas e uma que desaparece.
 // =====================================================================
 FASES.push({
-  nome: 'Pulando pedrinhas',
+  nome: 'Pedras apressadas',
+  spawnAleatorioInimigos: true,
   plataformas: [
-    { x: 0,   y: 400, largura: 150, altura: 50 },
-    { x: 190, y: 350, largura: 80,  altura: 14 },
-    { x: 490, y: 350, largura: 80,  altura: 14 },
-    { x: 640, y: 400, largura: 160, altura: 50 }
+    { x: 0, y: 400, largura: 170, altura: 50 },
+    { x: 210, y: 350, largura: 90, altura: 14 },
+    { x: 570, y: 350, largura: 90, altura: 14 },
+    { x: 700, y: 400, largura: 100, altura: 50 }
   ],
   armadilhas: [
-    { tipo: 'chaoQueSome', x: 340, y: 330, largura: 80, altura: 14, espera: 20 },
-    { tipo: 'espinho', x: 680 }
+    { tipo: 'chaoQueSome', x: 390, y: 320, largura: 90, altura: 14, espera: 20 },
+    { tipo: 'espinho', x: 735, largura: 30 }
   ]
 });

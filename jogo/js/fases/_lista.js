@@ -32,8 +32,9 @@
 //    limiteInimigosAtivos máximo simultâneo (padrão: LIMITE_INIMIGOS_ATIVOS = 5)
 //    tiposInimigos lista opcional de tipos permitidos na geracao procedural
 //                     (ex.: ['voador']); por padrao depende da progressao da fase.
-//    spawnAleatorioInimigos false desativa geracao; pontosSpawnInimigos aceita
-//                              lista de { x, y, tipo? } com coordenadas fixas opcionais.
+//    spawnAleatorioInimigos false desativa geracao; habilitada, quantidade,
+//                              tipos e posicoes dos inimigos sao sorteados
+//                              a cada fase, limitados ao teto de 5 inimigos.
 //                Voadores ficam na metade superior, afastados de plataformas.
 //    permitirSobreposicaoInimigos true permite sobrepor inimigos (use com cautela).
 //    invertida   true = setas invertidas

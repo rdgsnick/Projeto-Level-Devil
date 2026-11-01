@@ -18,6 +18,7 @@ const PONTOS_POR_FASE = 1000;     // pontos de quem passa instantaneamente
 const PERDA_POR_SEGUNDO = 10;     // pontos perdidos por segundo na fase
 const PERDA_POR_MORTE = 50;       // pontos perdidos por morte na fase
 const PONTOS_MINIMOS_POR_FASE = 100;
+const PONTOS_POR_INIMIGO = 300;   // pontos confirmados ao concluir a fase
 
 // ----- Cenário -----
 const CENARIO_PADRAO = 'img/cenario/cenario.jpg';   // imagem de fundo (cada fase pode ter a sua com "cenario")
@@ -76,7 +77,7 @@ const LIMITE_INIMIGOS_ATIVOS = 5;                // máximo de inimigos na tela 
 const MARGEM_SEGURANCA_VOADOR = TAMANHO_BLOCO;   // o voador nasce longe das plataformas por no mínimo isso
 const INIMIGO_TAMANHOS = {                       // tamanho padrão de cada tipo (a fase pode mudar com "largura"/"altura")
   voador:   { largura: 30, altura: 24 },
-  corredor: { largura: 28, altura: 28 },
+  corredor: { largura: 36, altura: 34 },
   suicida:  { largura: 28, altura: 28 }       // a bomba (a caixa de colisão é o corpo redondo dela)
 };
 
@@ -91,7 +92,7 @@ const VELOCIDADE_VOADOR = 1.5;
 const VELOCIDADE_CORREDOR = 2;
 
 // ----- Inimigo corredor: desenho e animação (imagens em img/inimigos/corredor/) -----
-const CORREDOR_ALTURA_SPRITE = 52;       // altura do desenho do corredor (a caixa de colisão continua 28x28; os pés ficam no chão dela)
+const CORREDOR_ALTURA_SPRITE = 52;       // altura do desenho do corredor (a hitbox acompanha o corpo; os pés ficam no chão dela)
 const CORREDOR_FRAMES_POR_PASSO = 8;     // a cada quantos frames ele troca de desenho andando (menor = mais rápido)
 const CORREDOR_ATAQUE_ALCANCE_X = 80;    // o gato a até tantos px na frente dele (centro a centro) faz ele balançar o taco
 const CORREDOR_ATAQUE_ALCANCE_Y = 40;    // ...e só se estiver mais ou menos na mesma altura (diferença máxima em px)
@@ -101,7 +102,7 @@ const CORREDOR_ATAQUE_RECARGA = 40;      // frames até poder balançar o taco d
 const CORREDOR_GRAVIDADE = 0.5;          // se o chão sumir debaixo dele, o corredor cai com essa gravidade
 const CORREDOR_QUEDA_MAXIMA = 10;        // velocidade máxima da queda
 const VELOCIDADE_SUICIDA = 1.8;
-const INTERVALO_DISPARO_VOADOR = 90;             // frames entre um tiro e outro do voador
+const INTERVALO_DISPARO_VOADOR = 110;            // frames entre um tiro e outro do voador
 const INTERVALO_DISPARO_MINIMO = 35;             // o voador nunca atira mais rápido que isso
 
 // ----- Inimigos: geração automática (quantos nascem, quando e onde) -----

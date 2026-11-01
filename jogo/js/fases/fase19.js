@@ -1,18 +1,18 @@
 // =====================================================================
-//  FASE 19 - Combo
+//  FASE 19 - Uma rota de plataformas com piso que some e parede surpresa.
 // =====================================================================
 FASES.push({
-  nome: 'Combo',
+  nome: 'Rota de risco',
+  spawnAleatorioInimigos: true,
   porta: { x: 765, y: 350 },
   plataformas: [
-    { x: 0,   y: 400, largura: 150, altura: 50 },
-    { x: 250, y: 400, largura: 100, altura: 50 },
-    { x: 520, y: 400, largura: 280, altura: 50 }
+    { x: 0, y: 400, largura: 165, altura: 50 },
+    { x: 465, y: 335, largura: 95, altura: 14 },
+    { x: 650, y: 400, largura: 150, altura: 50 }
   ],
   armadilhas: [
-    { tipo: 'chaoQueSome', x: 150, y: 400, largura: 100, altura: 50 },
-    { tipo: 'chaoInvisivel', x: 350, y: 400, largura: 170, altura: 50 },
-    { tipo: 'parede', x: 580 },
-    { tipo: 'espinho', x: 730, largura: 30 }
+    { tipo: 'chaoQueSome', x: 265, y: 365, largura: 95, altura: 14, espera: 16 },
+    { tipo: 'parede', x: 680, aparecerEm: 600, altura: 35 },
+    { tipo: 'espinho', x: 715, largura: 30 }
   ]
 });

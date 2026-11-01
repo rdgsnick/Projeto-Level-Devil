@@ -9,7 +9,7 @@
 //    3) PAVIO ACESO: só quando ENCOSTA no gato o pavio começa a queimar.
 //       Ela fica parada por tempoExplosao frames e então explode.
 //       (de longe ela nunca explode)
-//    4) EXPLOSÃO: área quadrada de 2 blocos de raio. Quem estiver nela morre.
+//    4) EXPLOSÃO: área quadrada de 2 blocos de raio. O jogador e os inimigos próximos morrem.
 //       Se o gato bater nela com a espada antes disso, ela some sem explodir.
 //
 //  Parâmetros (todos opcionais; os padrões estão no config.js, seção "Inimigo bomba"):
@@ -79,6 +79,7 @@ registrarInimigo('suicida', {
     inimigo.explodiu = false;          // já explodiu?
     inimigo.contagemExplosao = 0;      // frames de pavio queimado
     inimigo.areaResolvida = false;     // o dano da explosão já foi aplicado?
+    inimigo.explosaoInimigosResolvida = false;
     inimigo.tempoVisualExplosao = 0;   // frames que faltam do desenho da explosão
     inimigo.ignorarEspada = false;     // true = a espada não acerta mais (depois que explodiu)
   },

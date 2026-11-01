@@ -1,10 +1,10 @@
 // =====================================================================
-//  FASE 7 - Quem mandou parar?
+//  FASE 7 - Fuja do espinho e da bomba sem entrar em pânico.
 // =====================================================================
 FASES.push({
-  nome: 'Quem mandou parar?',
+  nome: 'Perseguição dupla',
+  spawnAleatorioInimigos: true,
   armadilhas: [
-    { tipo: 'espinhoDeslizante', x: 820, ativarEm: 150 },
-    { tipo: 'espinhoDeslizante', x: 820, ativarEm: 560 }
+    { tipo: 'espinhoDeslizante', x: 820, ativarEm: 170, velocidade: 2.5 }
   ]
 });

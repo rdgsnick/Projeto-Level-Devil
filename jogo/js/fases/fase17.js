@@ -1,12 +1,17 @@
 // =====================================================================
-//  FASE 17 - Porta, porta, porta
+//  FASE 17 - As saídas falsas protegem a porta verdadeira.
 // =====================================================================
 FASES.push({
-  nome: 'Porta, porta, porta',
+  nome: 'Galeria das saídas',
+  spawnAleatorioInimigos: true,
   armadilhas: [
-    { tipo: 'portaFalsa', x: 150 },
-    { tipo: 'portaFalsa', x: 330 },
-    { tipo: 'portaFalsa', x: 510 },
-    { tipo: 'espinho', x: 660 }
-  ]
+    { tipo: 'portaFalsa', x: 220 },
+    { tipo: 'portaFalsa', x: 490 },
+    { tipo: 'espinho', x: 650, largura: 30 }
+  ],
+  porta: {
+    x: 735,
+    y: 350,
+    foge: [{ x: 610, y: 350 }]
+  }
 });

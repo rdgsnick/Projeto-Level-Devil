@@ -19,6 +19,25 @@ const CORREDOR_IMAGENS = {
 // Se você redesenhar alguma imagem virada pro outro lado, troque aqui.
 const CORREDOR_LADO_DO_DESENHO = { parado: 0, andando: -1, preparo: 1, golpe: -1 };
 
+function nomeDesenhoCorredor(inimigo) {
+  if (inimigo.ataque === 'preparo') return 'preparo';
+  if (inimigo.ataque === 'golpe') return 'golpe';
+  return Math.floor(inimigo.tempoAnimacao / CORREDOR_FRAMES_POR_PASSO) % 2 === 0
+    ? 'andando'
+    : 'parado';
+}
+
+function retanguloDesenhoCorredor(inimigo, imagem) {
+  const altura = Math.max(inimigo.altura, Math.min(CORREDOR_ALTURA_SPRITE, TIPOS_INIMIGO.corredor.espacoAcima(inimigo)));
+  const largura = altura * imagem.naturalWidth / imagem.naturalHeight;
+  return {
+    x: inimigo.x + (inimigo.largura - largura) / 2,
+    y: inimigo.y + inimigo.altura - altura,
+    largura: largura,
+    altura: altura
+  };
+}
+
 function zerarAnimacaoCorredor(inimigo) {
   inimigo.tempoAnimacao = 0;      // frames andando (só anda quando a fase está rodando)
   inimigo.ataque = 'nenhum';      // 'nenhum' | 'preparo' | 'golpe'
@@ -152,6 +171,14 @@ registrarInimigo('corredor', {
     return true;
   },
 
+  hitboxProjetil(inimigo) {
+    const nome = nomeDesenhoCorredor(inimigo);
+    const imagem = CORREDOR_IMAGENS[nome];
+    if (!imagemPronta(imagem)) return inimigo;
+
+    return retanguloDesenhoCorredor(inimigo, imagem);
+  },
+
   atualizar(inimigo) {
     this.atualizarAtaque(inimigo);
     inimigo.tempoAnimacao++;
@@ -220,21 +247,14 @@ registrarInimigo('corredor', {
   },
 
   desenhar(inimigo) {
-    // Escolhe o desenho: ataque tem prioridade, senão alterna parado/andando
-    let nome;
-    if (inimigo.ataque === 'preparo') nome = 'preparo';
-    else if (inimigo.ataque === 'golpe') nome = 'golpe';
-    else nome = Math.floor(inimigo.tempoAnimacao / CORREDOR_FRAMES_POR_PASSO) % 2 === 0 ? 'andando' : 'parado';
-
+    const nome = nomeDesenhoCorredor(inimigo);
     const imagem = CORREDOR_IMAGENS[nome];
     if (!imagemPronta(imagem)) {
       desenharRetangulo(inimigo, '#d35400');      // plano B: a imagem não carregou
       return;
     }
 
-    // O desenho é mais alto que a caixa de colisão: se tem um teto/pedra logo acima, encolhe pra não entrar nele
-    const altura = Math.max(inimigo.altura, Math.min(CORREDOR_ALTURA_SPRITE, this.espacoAcima(inimigo)));
-    const largura = altura * imagem.naturalWidth / imagem.naturalHeight;
+    const desenho = retanguloDesenhoCorredor(inimigo, imagem);
     const ladoOriginal = CORREDOR_LADO_DO_DESENHO[nome];
     const espelhar = ladoOriginal !== 0 && inimigo.virado !== ladoOriginal;
 
@@ -247,7 +267,7 @@ registrarInimigo('corredor', {
     ctx.imageSmoothingEnabled = false;            // mantém o pixel art nítido
     ctx.translate(inimigo.x + inimigo.largura / 2, inimigo.y + inimigo.altura - sobe);   // pés do corredor
     ctx.scale(espelhar ? -1 : 1, 1);
-    ctx.drawImage(imagem, -largura / 2, -altura, largura, altura);
+    ctx.drawImage(imagem, -desenho.largura / 2, -desenho.altura, desenho.largura, desenho.altura);
     ctx.restore();
   },
 

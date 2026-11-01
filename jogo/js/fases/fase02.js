@@ -1,14 +1,14 @@
 // =====================================================================
-//  FASE 2 - Confia no chão
+//  FASE 2 - A ponte desaba depois do pouso; um corredor espera do outro lado.
 // =====================================================================
 FASES.push({
-  nome: 'Confia no chão',
+  nome: 'Ponte cronometrada',
+  spawnAleatorioInimigos: true,
   plataformas: [
-    { x: 0,   y: 400, largura: 200, altura: 50 },
-    { x: 320, y: 400, largura: 480, altura: 50 }
+    { x: 0, y: 400, largura: 260, altura: 50 },
+    { x: 340, y: 400, largura: 460, altura: 50 }
   ],
   armadilhas: [
-    { tipo: 'chaoQueSome', x: 200, y: 400, largura: 120, altura: 50 },
-    { tipo: 'espinho', x: 560 }
+    { tipo: 'chaoQueSome', x: 260, y: 400, largura: 80, altura: 50, espera: 24 }
   ]
 });

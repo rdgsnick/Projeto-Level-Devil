@@ -75,7 +75,10 @@ function criarEfeitoMorte(inimigo) {
 
 // Chamada pelo combate quando a espada acerta: o inimigo morre COM animação
 function matarInimigo(inimigo) {
+  if (fase.inimigos.indexOf(inimigo) < 0) return;
+
   removerInimigo(inimigo);
+  pontosInimigosPendentes += PONTOS_POR_INIMIGO;
   criarEfeitoMorte(inimigo);
 }
 

@@ -61,6 +61,9 @@ registrarInimigo('voador', {
     for (let i = inimigo.projeteis.length - 1; i >= 0; i--) {
       const p = inimigo.projeteis[i];
 
+      p.xAnterior = p.x;
+      p.yAnterior = p.y;
+
       if (!p.trilha) p.trilha = [];
       p.trilha.unshift({
         x: p.x + p.largura / 2,

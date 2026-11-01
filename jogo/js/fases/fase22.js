@@ -1,16 +1,16 @@
 // =====================================================================
-//  FASE 22 - Túnel baixo
-//  podeAgachar: true -> segure Shift pra agachar.
-//  O túnel tem 22px de altura: só dá pra passar agachado.
+//  FASE 22 - Agache no túnel e saia antes de a bomba chegar.
 // =====================================================================
 FASES.push({
-  nome: 'Túnel baixo',
+  nome: 'Túnel com visita',
+  spawnAleatorioInimigos: true,
+  podeAgachar: true,
   plataformas: [
     { x: 0,   y: 400, largura: 800, altura: 50 },
-    { x: 300, y: 300, largura: 220, altura: 76, estilo: 'pedra' }
+    { x: 270, y: 310, largura: 250, altura: 62, estilo: 'pedra' }
   ],
   armadilhas: [
-    { tipo: 'espinho', x: 170 },
-    { tipo: 'espinho', x: 600 }
+    { tipo: 'espinho', x: 170, largura: 30 },
+    { tipo: 'espinho', x: 615, largura: 30 }
   ]
 });
