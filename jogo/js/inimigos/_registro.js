@@ -48,6 +48,8 @@ function animarInimigos() {
     const tipo = TIPOS_INIMIGO[inimigo.tipo];
     if (tipo && tipo.animar) tipo.animar(inimigo);
   }
+
+  atualizarEfeitosMorte();
 }
 
 function inimigoMatouJogador() {
@@ -67,6 +69,8 @@ function desenharInimigos() {
     const tipo = TIPOS_INIMIGO[inimigo.tipo];
     if (tipo && tipo.desenhar) tipo.desenhar(inimigo);
   }
+
+  desenharEfeitosMorte();
 }
 
 function resetarInimigos() {

@@ -98,6 +98,8 @@ const CORREDOR_ATAQUE_ALCANCE_Y = 40;    // ...e só se estiver mais ou menos na
 const CORREDOR_ATAQUE_PREPARO = 14;      // frames levantando o taco (ataque1)
 const CORREDOR_ATAQUE_GOLPE = 10;        // frames golpeando (ataque2)
 const CORREDOR_ATAQUE_RECARGA = 40;      // frames até poder balançar o taco de novo
+const CORREDOR_GRAVIDADE = 0.5;          // se o chão sumir debaixo dele, o corredor cai com essa gravidade
+const CORREDOR_QUEDA_MAXIMA = 10;        // velocidade máxima da queda
 const VELOCIDADE_SUICIDA = 1.8;
 const INTERVALO_DISPARO_VOADOR = 90;             // frames entre um tiro e outro do voador
 const INTERVALO_DISPARO_MINIMO = 35;             // o voador nunca atira mais rápido que isso
@@ -115,3 +117,15 @@ const SPAWN_DISTANCIA_MINIMA_PORTA = 70;         // ...nem a menos de tantos px 
 const SPAWN_LARGURA_MINIMA_PLATAFORMA = 30;      // plataformas mais estreitas que isso não recebem inimigo terrestre
 const SPAWN_CANDIDATOS_POR_PLATAFORMA = 12;      // quantas posições sorteadas por plataforma (o jogo escolhe uma delas)
 const SPAWN_CANDIDATOS_AEREOS = 40;              // quantas posições sorteadas no ar pro voador
+
+// ----- Morte dos inimigos (animação quando a espada acerta; veja inimigos/morte.js) -----
+const MORTE_PARTICULAS = 14;       // quantos pedacinhos (estrelas, penas, fumaça) saem de cada inimigo que morre
+const MORTE_PISCAR_FRAMES = 6;     // frames que o inimigo fica todo branco no momento do golpe
+const MORTE_PADRAO = { duracao: 50, impulsoX: 2.5, impulsoY: -5, gravidade: 0.4, giro: 0.25, particulas: ['#ffffff', '#ffd60a'], estrelas: true };
+const MORTE_PARAMETROS = {         // cada tipo morre de um jeito
+  //   duracao: frames da animação | impulsoX/impulsoY: força do arremesso (X vai pra longe do gato) | gravidade: quanto cai
+  //   giro: voltas por frame (radianos) | particulas: cores | estrelas: true = estrelinhas, senão quadradinhos | fumaca: true = nuvem
+  corredor: { duracao: 55, impulsoX: 3.2, impulsoY: -6.5, gravidade: 0.45, giro: 0.32, particulas: ['#ff6fae', '#ffd60a', '#ffffff'], estrelas: true, centroYSubir: 8 },
+  voador:   { duracao: 60, impulsoX: 2.0, impulsoY: -3.0, gravidade: 0.35, giro: 0.22, particulas: ['#ed1024', '#100d10', '#ffffff'] },
+  suicida:  { duracao: 42, impulsoX: 0.0, impulsoY: -3.5, gravidade: 0.30, giro: 0.18, particulas: ['#4a4a4a', '#7a7a7a', '#ffb703'], fumaca: true }
+};

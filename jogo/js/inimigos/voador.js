@@ -61,6 +61,13 @@ registrarInimigo('voador', {
     for (let i = inimigo.projeteis.length - 1; i >= 0; i--) {
       const p = inimigo.projeteis[i];
 
+      if (!p.trilha) p.trilha = [];
+      p.trilha.unshift({
+        x: p.x + p.largura / 2,
+        y: p.y + p.altura / 2
+      });
+      if (p.trilha.length > 10) p.trilha.pop();
+
       // Pequenos passos evitam atravessar obstáculos finos.
       const passos = Math.max(
         1,
@@ -121,7 +128,9 @@ registrarInimigo('voador', {
           largura: 8,
           altura: 8,
           vx: Math.cos(angulo) * inimigo.velocidadeProjetil,
-          vy: Math.sin(angulo) * inimigo.velocidadeProjetil
+          vy: Math.sin(angulo) * inimigo.velocidadeProjetil,
+          trilha: [],
+          rebatido: false
         });
       }
 
@@ -134,7 +143,9 @@ registrarInimigo('voador', {
       largura: 8,
       altura: 8,
       vx: 0,
-      vy: 0
+      vy: 0,
+      trilha: [],
+      rebatido: false
     };
 
     // Disparo para a frente e para baixo.
@@ -168,7 +179,7 @@ registrarInimigo('voador', {
   mata(inimigo) {
     // Os projéteis também causam dano ao jogador.
     for (let i = inimigo.projeteis.length - 1; i >= 0; i--) {
-      if (colidiu(jogador, inimigo.projeteis[i])) {
+      if (!inimigo.projeteis[i].rebatido && colidiu(jogador, inimigo.projeteis[i])) {
         inimigo.projeteis.splice(i, 1);
         return true;
       }
@@ -180,28 +191,9 @@ registrarInimigo('voador', {
   desenhar(inimigo) {
     desenharPassaroVermelho(inimigo);
 
-    // Desenha os projéteis.
+    // Desenha os projéteis como flechas com um rastro de vento.
     for (let i = 0; i < inimigo.projeteis.length; i++) {
-      const p = inimigo.projeteis[i];
-
-      ctx.fillStyle = '#171014';
-      ctx.fillRect(
-        p.x - 1,
-        p.y - 1,
-        p.largura + 2,
-        p.altura + 2
-      );
-
-      ctx.fillStyle = '#ff9f1c';
-      ctx.fillRect(
-        p.x + 1,
-        p.y + 1,
-        p.largura - 2,
-        p.altura - 2
-      );
-
-      ctx.fillStyle = '#ffe066';
-      ctx.fillRect(p.x + 2, p.y + 2, 2, 2);
+      desenharProjetilVoador(inimigo.projeteis[i]);
     }
 
     if (MOSTRAR_HITBOX) {
@@ -224,6 +216,93 @@ registrarInimigo('voador', {
     inimigo.projeteis = [];
   }
 });
+
+function desenharProjetilVoador(projetil) {
+  const centroX = projetil.x + projetil.largura / 2;
+  const centroY = projetil.y + projetil.altura / 2;
+  const velocidade = Math.hypot(projetil.vx, projetil.vy) || 1;
+  const direcaoX = projetil.vx / velocidade;
+  const direcaoY = projetil.vy / velocidade;
+  const corVento = projetil.rebatido ? '#69f5ff' : '#ff9f1c';
+  const corBrilho = projetil.rebatido ? '#e5ffff' : '#fff1a8';
+
+  // O rastro fica atrás da flecha e desaparece suavemente conforme envelhece.
+  ctx.save();
+  ctx.lineCap = 'round';
+  for (let i = 0; i < projetil.trilha.length; i++) {
+    const anterior = projetil.trilha[i];
+    const proximo = i === 0
+      ? { x: centroX, y: centroY }
+      : projetil.trilha[i - 1];
+    const progresso = 1 - i / projetil.trilha.length;
+
+    ctx.globalAlpha = progresso * 0.42;
+    ctx.strokeStyle = corVento;
+    ctx.lineWidth = 1 + progresso * 3;
+    ctx.beginPath();
+    ctx.moveTo(anterior.x, anterior.y);
+    ctx.lineTo(proximo.x, proximo.y);
+    ctx.stroke();
+
+    // Filetes laterais dão a impressão de ar cortado pela flecha.
+    if (i < 6) {
+      const deslocamento = Math.sin(i * 1.15) * (2 + i * 0.35);
+      ctx.globalAlpha = progresso * 0.28;
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(
+        anterior.x - direcaoX * 5 - direcaoY * deslocamento,
+        anterior.y - direcaoY * 5 + direcaoX * deslocamento
+      );
+      ctx.lineTo(
+        proximo.x - direcaoX * 5 - direcaoY * deslocamento,
+        proximo.y - direcaoY * 5 + direcaoX * deslocamento
+      );
+      ctx.stroke();
+    }
+  }
+  ctx.restore();
+
+  // Flecha orientada pelo vetor de movimento.
+  ctx.save();
+  ctx.translate(centroX, centroY);
+  ctx.rotate(Math.atan2(projetil.vy, projetil.vx));
+  ctx.shadowColor = corVento;
+  ctx.shadowBlur = projetil.rebatido ? 12 : 8;
+
+  ctx.fillStyle = '#24151b';
+  ctx.beginPath();
+  ctx.moveTo(10, 0);
+  ctx.lineTo(1, -3);
+  ctx.lineTo(-4, -6);
+  ctx.lineTo(-3, -2);
+  ctx.lineTo(-10, -2);
+  ctx.lineTo(-10, 2);
+  ctx.lineTo(-3, 2);
+  ctx.lineTo(-4, 6);
+  ctx.lineTo(1, 3);
+  ctx.closePath();
+  ctx.fill();
+
+  ctx.fillStyle = corVento;
+  ctx.beginPath();
+  ctx.moveTo(8, 0);
+  ctx.lineTo(1, -1.5);
+  ctx.lineTo(-3, -4);
+  ctx.lineTo(-2, -1);
+  ctx.lineTo(-8, -1);
+  ctx.lineTo(-8, 1);
+  ctx.lineTo(-2, 1);
+  ctx.lineTo(-3, 4);
+  ctx.lineTo(1, 1.5);
+  ctx.closePath();
+  ctx.fill();
+
+  ctx.fillStyle = corBrilho;
+  ctx.fillRect(-6, -1, 9, 1);
+  ctx.fillRect(4, -1, 2, 2);
+  ctx.restore();
+}
 
 
 // =====================================================================

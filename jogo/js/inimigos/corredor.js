@@ -38,6 +38,7 @@ registrarInimigo('corredor', {
     inimigo.direcao = inimigo.direcao < 0 ? -1 : 1;
     inimigo.direcaoInicial = inimigo.direcao;
     inimigo.noChao = true;
+    inimigo.vy = 0;
     zerarAnimacaoCorredor(inimigo);
   },
 
@@ -68,10 +69,97 @@ registrarInimigo('corredor', {
     }
   },
 
+  // Tudo em que o corredor pode pisar / bater. O que está ESCONDIDO (chão invisível que o gato
+  // ainda não pisou) não conta: pro corredor aquilo é buraco, senão ele andava no ar e parava em paredes que não existem.
+  solidosVisiveis() {
+    const todos = listarSolidos();
+    const lista = [];
+    for (let i = 0; i < todos.length; i++) {
+      if (todos[i].visivel !== false) lista.push(todos[i]);
+    }
+    return lista;
+  },
+
+  // Uma parede pode SURGIR em cima do corredor (fases com 'parede'). Aí ele é empurrado pro lado
+  // mais perto (e vira de costas pra parede). Se não der pra empurrar, ele some, em vez de ficar preso lá dentro.
+  // Devolve false se o corredor foi removido.
+  sairDeDentro(inimigo, solidos) {
+    for (let tentativa = 0; tentativa < 3; tentativa++) {
+      let preso = null;
+      for (let i = 0; i < solidos.length; i++) {
+        if (colidiu(inimigo, solidos[i])) { preso = solidos[i]; break; }
+      }
+      if (!preso) return true;
+
+      const aEsquerda = preso.x - inimigo.largura;
+      const aDireita = preso.x + preso.largura;
+      const opcoes = [aEsquerda, aDireita].sort(function (p, q) {
+        return Math.abs(p - inimigo.x) - Math.abs(q - inimigo.x);
+      });
+
+      let saiu = false;
+      for (let i = 0; i < opcoes.length && !saiu; i++) {
+        const teste = { x: opcoes[i], y: inimigo.y, largura: inimigo.largura, altura: inimigo.altura };
+        if (teste.x < 0 || teste.x + teste.largura > LARGURA_TELA) continue;
+        let livre = true;
+        for (let j = 0; j < solidos.length; j++) {
+          if (colidiu(teste, solidos[j])) { livre = false; break; }
+        }
+        if (!livre) continue;
+        inimigo.x = teste.x;
+        inimigo.direcao = opcoes[i] === aEsquerda ? -1 : 1;
+        saiu = true;
+      }
+
+      if (!saiu) {
+        inimigo.deveRemover = true;
+        return false;
+      }
+    }
+    return true;
+  },
+
+  // Tem chão debaixo dos pés agora? Se não (o chão que some sumiu, por exemplo), ele cai
+  // e pousa no que encontrar. Se cair pra fora da tela, é removido. Devolve true enquanto estiver no ar.
+  cair(inimigo, solidos) {
+    const pes = inimigo.y + inimigo.altura;
+    let apoiado = false;
+    for (let i = 0; i < solidos.length; i++) {
+      const s = solidos[i];
+      const mesmoX = inimigo.x < s.x + s.largura && inimigo.x + inimigo.largura > s.x;
+      if (mesmoX && s.y >= pes - 1 && s.y <= pes + 1) { apoiado = true; break; }
+    }
+    if (apoiado) {
+      inimigo.vy = 0;
+      return false;
+    }
+
+    inimigo.vy = Math.min(inimigo.vy + CORREDOR_GRAVIDADE, CORREDOR_QUEDA_MAXIMA);
+    const novosPes = pes + inimigo.vy;
+    let pouso = null;
+    for (let i = 0; i < solidos.length; i++) {
+      const s = solidos[i];
+      const mesmoX = inimigo.x < s.x + s.largura && inimigo.x + inimigo.largura > s.x;
+      if (mesmoX && s.y >= pes - 1 && s.y <= novosPes && (pouso === null || s.y < pouso.y)) pouso = s;
+    }
+    if (pouso) {
+      inimigo.y = pouso.y - inimigo.altura;
+      inimigo.vy = 0;
+    } else {
+      inimigo.y += inimigo.vy;
+      if (inimigo.y > ALTURA_TELA) inimigo.deveRemover = true;
+    }
+    return true;
+  },
+
   atualizar(inimigo) {
     this.atualizarAtaque(inimigo);
     inimigo.tempoAnimacao++;
     if (inimigo.ataque === 'nenhum') inimigo.virado = inimigo.direcao;   // andando: olha pra onde corre
+
+    const solidos = this.solidosVisiveis();
+    if (!this.sairDeDentro(inimigo, solidos)) return;   // preso numa parede que surgiu: sai ou some
+    if (this.cair(inimigo, solidos)) return;            // sem chão: cai (e não patrulha no ar)
 
     const anteriorX = inimigo.x;
     inimigo.x += inimigo.velocidade * inimigo.direcao;
@@ -83,7 +171,6 @@ registrarInimigo('corredor', {
       return;
     }
 
-    const solidos = listarSolidos();
     for (let i = 0; i < solidos.length; i++) {
       if (colidiu(inimigo, solidos[i])) {
         inimigo.x = anteriorX;
@@ -113,6 +200,21 @@ registrarInimigo('corredor', {
     }
   },
 
+  // Quantos px há dos pés dele até o teto mais próximo logo acima (ou a altura toda do sprite se não tem teto)
+  espacoAcima(inimigo) {
+    const pes = inimigo.y + inimigo.altura;
+    let teto = pes - CORREDOR_ALTURA_SPRITE;
+    const solidos = listarSolidos();
+    for (let i = 0; i < solidos.length; i++) {
+      const s = solidos[i];
+      if (s.visivel === false) continue;
+      const mesmoX = inimigo.x < s.x + s.largura && inimigo.x + inimigo.largura > s.x;
+      const base = s.y + s.altura;
+      if (mesmoX && base <= pes && base > teto) teto = base;
+    }
+    return pes - teto;
+  },
+
   mata(inimigo) {
     return colidiu(jogador, inimigo);
   },
@@ -130,7 +232,8 @@ registrarInimigo('corredor', {
       return;
     }
 
-    const altura = CORREDOR_ALTURA_SPRITE;
+    // O desenho é mais alto que a caixa de colisão: se tem um teto/pedra logo acima, encolhe pra não entrar nele
+    const altura = Math.max(inimigo.altura, Math.min(CORREDOR_ALTURA_SPRITE, this.espacoAcima(inimigo)));
     const largura = altura * imagem.naturalWidth / imagem.naturalHeight;
     const ladoOriginal = CORREDOR_LADO_DO_DESENHO[nome];
     const espelhar = ladoOriginal !== 0 && inimigo.virado !== ladoOriginal;
@@ -152,6 +255,8 @@ registrarInimigo('corredor', {
     inimigo.x = inimigo.xInicial;
     inimigo.y = inimigo.yInicial;
     inimigo.direcao = inimigo.direcaoInicial < 0 ? -1 : 1;
+    inimigo.vy = 0;
+    inimigo.deveRemover = false;
     zerarAnimacaoCorredor(inimigo);
   }
 });

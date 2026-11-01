@@ -187,6 +187,17 @@ function criarInimigoAleatorio(tiposDisponiveis) {
         if (colidiu(retangulo, areaProibida)) return false;
       }
 
+      // Inimigo terrestre não nasce em cima/colado de armadilha sólida (parede, chão que some, chão invisível...)
+      if (tipo !== 'voador') {
+        for (let i = 0; i < (fase.armadilhas || []).length; i++) {
+          const a = fase.armadilhas[i];
+          const tipoArmadilha = TIPOS_ARMADILHA[a.tipo];
+          if (!tipoArmadilha || !tipoArmadilha.solida) continue;
+          const zona = { x: a.x - 12, y: a.y, largura: (a.largura || 0) + 24, altura: a.altura || 0 };
+          if (colidiu(retangulo, zona)) return false;
+        }
+      }
+
       if (!fase.permitirSobreposicaoInimigos) {
         const existentes = fase.inimigos.concat(fase.filaInimigos);
         for (let i = 0; i < existentes.length; i++) {
@@ -275,6 +286,7 @@ function posicaoAereaSegura(inimigo, ignorar, verificarFila) {
 }
 
 function prepararInimigos() {
+  EFEITOS_MORTE.length = 0;     // começou a fase (ou o gato renasceu): somem as animações de morte que sobraram
   tentarSpawnInimigo();
 }
 

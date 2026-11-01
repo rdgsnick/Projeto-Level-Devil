@@ -1,11 +1,11 @@
 // =====================================================================
 //  COMBATE: aqui a espada e os inimigos se encontram
 //
-//  Regra: um golpe de espada que encosta num inimigo remove ele na hora
-//  (os inimigos têm 1 de vida). Isso vale pros três tipos:
-//    - corredor: some.
-//    - voador:   some junto com os tiros que ainda estavam voando.
-//    - suicida:  some. Se ele já estava na contagem da explosão, a contagem
+//  Regra: um golpe de espada que encosta num inimigo mata ele na hora
+//  (os inimigos têm 1 de vida) e toca a animação de morte (inimigos/morte.js). Vale pros três tipos:
+//    - corredor: é arremessado girando.
+//    - voador:   cai girando, e os tiros que ainda estavam voando somem.
+//    - suicida:  vira uma nuvem de fumaça. Se ele já estava na contagem da explosão, a contagem
 //                também some (matar antes de explodir = sem explosão).
 //  Quando um inimigo some, abre vaga na tela e o próximo da fila entra
 //  (isso é feito pelo atualizarInimigos, no inimigos/_registro.js).
@@ -22,12 +22,17 @@
 
 // Roda a cada frame, depois de atualizar a espada e os inimigos
 function resolverEspadaContraInimigos() {
-  if (obterHitboxEspada() === null) return;          // a espada não está machucando agora
+  const espadaAtiva = obterHitboxEspada() !== null;
 
   // de trás pra frente porque removerInimigo tira o inimigo da lista
   for (let i = fase.inimigos.length - 1; i >= 0; i--) {
     const inimigo = fase.inimigos[i];
-    if (inimigo.ignorarEspada) continue;     // ex: bomba que já explodiu (só falta o desenho sumir)
+    if (inimigo.tipo === 'voador' && flechaRebatidaAcertaVoador(inimigo)) {
+      matarInimigo(inimigo);
+      continue;
+    }
+
+    if (!espadaAtiva || inimigo.ignorarEspada) continue; // ex: bomba que já explodiu
 
     // 1) os tiros desse inimigo (sempre ANTES de verificar o inimigo, pro caso de ele sumir junto)
     destruirProjeteisAtingidos(inimigo);
@@ -35,11 +40,25 @@ function resolverEspadaContraInimigos() {
     // 2) o inimigo em si
     if (!espadaAcerta(inimigo)) continue;
 
-    removerInimigo(inimigo);
+    matarInimigo(inimigo);                   // sai da lista na hora e toca a animação de morte (inimigos/morte.js)
     if (espada.direcao === 'baixo') {
       quicarNoInimigo();
     }
   }
+}
+
+function flechaRebatidaAcertaVoador(inimigo) {
+  if (!inimigo.projeteis) return false;
+
+  for (let i = inimigo.projeteis.length - 1; i >= 0; i--) {
+    const projetil = inimigo.projeteis[i];
+    if (projetil.rebatido && colidiu(projetil, inimigo)) {
+      inimigo.projeteis.splice(i, 1);
+      return true;
+    }
+  }
+
+  return false;
 }
 
 // Remove os tiros do inimigo que a espada está encostando.
@@ -48,9 +67,32 @@ function destruirProjeteisAtingidos(inimigo) {
   if (!inimigo.projeteis) return;
 
   for (let p = inimigo.projeteis.length - 1; p >= 0; p--) {
-    if (espadaAcerta(inimigo.projeteis[p])) {
-      inimigo.projeteis.splice(p, 1);
+    const projetil = inimigo.projeteis[p];
+    if (!espadaAcerta(projetil)) continue;
+
+    if (inimigo.tipo === 'voador') {
+      if (!projetil.rebatido) rebaterProjetil(projetil);
+      continue;
     }
+
+    inimigo.projeteis.splice(p, 1);
+  }
+}
+
+function rebaterProjetil(projetil) {
+  const velocidade = Math.max(7, Math.hypot(projetil.vx, projetil.vy) * 1.6);
+  projetil.rebatido = true;
+  projetil.trilha = [];
+
+  if (espada.direcao === 'cima') {
+    projetil.vx = 0;
+    projetil.vy = -velocidade;
+  } else if (espada.direcao === 'baixo') {
+    projetil.vx = 0;
+    projetil.vy = velocidade;
+  } else {
+    projetil.vx = velocidade * jogador.virado;
+    projetil.vy = 0;
   }
 }
 
