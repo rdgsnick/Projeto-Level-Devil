@@ -27,38 +27,104 @@ function desenharChao(r) {
   ctx.fillRect(r.x, r.y + Math.min(8, r.altura) - 2, r.largura, 2);
 }
 
-// Imagem da pedra (se você mudar a pasta ou o nome, é só trocar aqui)
-const PEDRA_IMAGEM = 'img/cenario/pedra.png';
+// ---------------------------------------------------------------------
+//  PEDRA
+//  Bloco de pedra (usado nos tetos baixos e nas paredes): pedras de tamanhos
+//  diferentes, contorno escuro e musgo no topo, nas cores do desenho da pedra.
+//  Ele preenche o bloco INTEIRO (o que você vê é exatamente onde o gato bate).
+//  O desenho é montado uma vez por bloco e guardado, então não pesa no jogo.
+// ---------------------------------------------------------------------
+const PEDRA_PIXEL = 3;                                  // tamanho de cada "pixel" do desenho (maior = mais grosso)
+const PEDRA_CONTORNO = '#1c0f1e';
+const PEDRA_CORES = ['#6a5f5d', '#5f5656', '#564e51', '#4b444a'];   // as pedras (sorteadas)
+const PEDRA_LUZ = '#7d7370';                            // quina de cima/esquerda de cada pedra
+const PEDRA_SOMBRA = '#3b333a';                         // quina de baixo/direita de cada pedra
+const PEDRA_MUSGO = ['#bacd35', '#8ea82b'];             // musgo claro e escuro
+const PEDRA_ALTURA_FILEIRA = [5, 7];                    // altura das fileiras de pedra, em "pixels" (mínimo, máximo)
+const PEDRA_LARGURA_PEDRA = [8, 16];                    // largura de cada pedra, em "pixels" (mínimo, máximo)
 
-// Bloco de pedra (usado nos tetos baixos e nas paredes)
-// A pedra do desenho aparece inteira, e se o bloco for largo ela se repete lado a lado
-function desenharPedra(r) {
-  const imagem = obterImagem(PEDRA_IMAGEM);
+const PEDRAS_PRONTAS = {};
 
-  if (imagemPronta(imagem)) {
-    // Base escura, pra não ficar buraco nos cantos entre uma pedra e outra
-    ctx.fillStyle = '#3d3745';
-    ctx.fillRect(r.x, r.y, r.largura, r.altura);
+// Sorteio com semente: o mesmo bloco sempre sai igual (não fica piscando)
+function sorteadorComSemente(semente) {
+  let n = semente >>> 0;
+  return function () {
+    n = (n + 0x6D2B79F5) >>> 0;
+    let t = n;
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
 
-    // Quantas pedras cabem na largura do bloco, sem esticar demais
-    const proporcao = imagem.naturalWidth / imagem.naturalHeight;
-    const quantas = Math.max(1, Math.round(r.largura / (r.altura * proporcao)));
-    const larguraCada = r.largura / quantas;
+function montarPedra(r) {
+  const U = PEDRA_PIXEL;
+  const cols = Math.max(1, Math.ceil(r.largura / U));
+  const linhas = Math.max(1, Math.ceil(r.altura / U));
+  const tela = document.createElement('canvas');
+  tela.width = cols * U;
+  tela.height = linhas * U;
+  const c = tela.getContext('2d');
+  const sorteio = sorteadorComSemente(Math.round(r.x * 7 + r.y * 13 + r.largura * 17 + r.altura * 19));
+  const entre = (par) => par[0] + Math.floor(sorteio() * (par[1] - par[0] + 1));
+  const quadrado = (x, y, w, h, cor) => { c.fillStyle = cor; c.fillRect(x * U, y * U, w * U, h * U); };
 
-    ctx.save();
-    ctx.imageSmoothingEnabled = false;         // mantém o pixel art nítido
-    for (let i = 0; i < quantas; i++) {
-      ctx.drawImage(imagem, r.x + i * larguraCada, r.y, larguraCada, r.altura);
+  // fundo (cor do contorno: as frestas entre as pedras ficam escuras)
+  quadrado(0, 0, cols, linhas, PEDRA_CONTORNO);
+
+  // fileiras de pedras, cada uma começando num ponto diferente (como um muro de pedra solta)
+  let y = 0;
+  while (y < linhas) {
+    const alt = Math.min(entre(PEDRA_ALTURA_FILEIRA), linhas - y);
+    let x = -Math.floor(sorteio() * PEDRA_LARGURA_PEDRA[1]);
+    while (x < cols) {
+      const larg = entre(PEDRA_LARGURA_PEDRA);
+      const x0 = Math.max(x, 0);
+      const x1 = Math.min(x + larg, cols);
+      // 1 "pixel" de fresta em volta de cada pedra
+      const px = x0 + (x < 0 ? 0 : 1), py = y + 1;
+      const pw = x1 - px - 0, ph = alt - 1;
+      if (pw > 1 && ph > 1) {
+        quadrado(px, py, pw, ph, PEDRA_CORES[Math.floor(sorteio() * PEDRA_CORES.length)]);
+        quadrado(px, py, pw, 1, PEDRA_LUZ);             // luz em cima
+        quadrado(px, py, 1, ph, PEDRA_LUZ);             // luz na esquerda
+        quadrado(px, py + ph - 1, pw, 1, PEDRA_SOMBRA); // sombra embaixo
+        quadrado(px + pw - 1, py, 1, ph, PEDRA_SOMBRA); // sombra na direita
+        if (sorteio() < 0.35 && pw > 5 && ph > 3) {      // um riscadinho de brilho, como na pedra do desenho
+          quadrado(px + 2, py + 2, Math.min(3, pw - 4), 1, PEDRA_LUZ);
+        }
+      }
+      x += larg;
     }
-    ctx.restore();
-  } else {
-    // Plano B: bloco cinza liso, caso a imagem não carregue
-    ctx.fillStyle = '#6b6b78';
-    ctx.fillRect(r.x, r.y, r.largura, r.altura);
-    ctx.strokeStyle = '#3d3d48';
-    ctx.lineWidth = 2;
-    ctx.strokeRect(r.x + 1, r.y + 1, r.largura - 2, r.altura - 2);
+    y += alt;
   }
+
+  // musgo no topo, com algumas gotinhas escorrendo
+  for (let i = 0; i < cols; i++) {
+    const fundo = 1 + Math.floor(sorteio() * 2) + (sorteio() < 0.22 ? 2 + Math.floor(sorteio() * 2) : 0);
+    quadrado(i, 0, 1, Math.min(fundo + 1, linhas), PEDRA_MUSGO[0]);
+    if (sorteio() < 0.5) quadrado(i, Math.min(fundo, linhas - 1), 1, 1, PEDRA_MUSGO[1]);
+  }
+
+  // contorno escuro em volta do bloco todo
+  quadrado(0, linhas - 1, cols, 1, PEDRA_CONTORNO);
+  quadrado(0, 0, 1, linhas, PEDRA_CONTORNO);
+  quadrado(cols - 1, 0, 1, linhas, PEDRA_CONTORNO);
+
+  return tela;
+}
+
+function desenharPedra(r) {
+  const chave = r.largura + 'x' + r.altura + '@' + r.x + ',' + r.y;
+  if (!PEDRAS_PRONTAS[chave]) PEDRAS_PRONTAS[chave] = montarPedra(r);
+
+  ctx.save();
+  ctx.beginPath();
+  ctx.rect(r.x, r.y, r.largura, r.altura);
+  ctx.clip();                                   // corta o que passar do bloco (largura que não divide certinho)
+  ctx.imageSmoothingEnabled = false;            // mantém o pixel art nítido
+  ctx.drawImage(PEDRAS_PRONTAS[chave], r.x, r.y);
+  ctx.restore();
 }
 
 // Plataforma da fase: terra com grama, ou pedra se tiver  estilo: 'pedra'

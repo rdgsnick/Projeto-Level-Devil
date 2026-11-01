@@ -89,6 +89,15 @@ const BOMBA_DURACAO_EXPLOSAO = 14;    // quantos frames o desenho da explosão f
 // ----- Inimigos: velocidades base de cada tipo (nas fases mais altas elas aumentam, veja "Geração") -----
 const VELOCIDADE_VOADOR = 1.5;
 const VELOCIDADE_CORREDOR = 2;
+
+// ----- Inimigo corredor: desenho e animação (imagens em img/inimigos/corredor/) -----
+const CORREDOR_ALTURA_SPRITE = 52;       // altura do desenho do corredor (a caixa de colisão continua 28x28; os pés ficam no chão dela)
+const CORREDOR_FRAMES_POR_PASSO = 8;     // a cada quantos frames ele troca de desenho andando (menor = mais rápido)
+const CORREDOR_ATAQUE_ALCANCE_X = 80;    // o gato a até tantos px na frente dele (centro a centro) faz ele balançar o taco
+const CORREDOR_ATAQUE_ALCANCE_Y = 40;    // ...e só se estiver mais ou menos na mesma altura (diferença máxima em px)
+const CORREDOR_ATAQUE_PREPARO = 14;      // frames levantando o taco (ataque1)
+const CORREDOR_ATAQUE_GOLPE = 10;        // frames golpeando (ataque2)
+const CORREDOR_ATAQUE_RECARGA = 40;      // frames até poder balançar o taco de novo
 const VELOCIDADE_SUICIDA = 1.8;
 const INTERVALO_DISPARO_VOADOR = 90;             // frames entre um tiro e outro do voador
 const INTERVALO_DISPARO_MINIMO = 35;             // o voador nunca atira mais rápido que isso
