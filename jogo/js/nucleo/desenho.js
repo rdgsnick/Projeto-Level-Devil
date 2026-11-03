@@ -7,6 +7,15 @@ function desenharRetangulo(retangulo, cor) {
   ctx.fillRect(retangulo.x, retangulo.y, retangulo.largura, retangulo.altura);
 }
 
+function desenharHitbox(retangulo, cor) {
+  if (!MOSTRAR_HITBOX || !retangulo) return;
+  ctx.save();
+  ctx.strokeStyle = cor;
+  ctx.lineWidth = 1;
+  ctx.strokeRect(retangulo.x, retangulo.y, retangulo.largura, retangulo.altura);
+  ctx.restore();
+}
+
 // Imagem de fundo da fase (a fase pode ter a sua com  cenario: 'img/cenario/outro.jpg')
 function desenharCenario() {
   const imagem = obterImagem(fase.cenario || CENARIO_PADRAO);

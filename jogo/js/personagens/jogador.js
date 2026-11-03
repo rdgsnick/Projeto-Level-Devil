@@ -281,11 +281,7 @@ function desenharJogador() {
     desenharGatoVivo();
   }
 
-  if (MOSTRAR_HITBOX) {
-    ctx.strokeStyle = '#00ff00';
-    ctx.lineWidth = 1;
-    ctx.strokeRect(jogador.x, jogador.y, jogador.largura, jogador.altura);
-  }
+  desenharHitbox(jogador, '#00ff00');
 }
 
 // Desenha o gato vivo. Os pés ficam no "chão" da caixa de colisão, o desenho é

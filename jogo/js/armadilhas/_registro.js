@@ -83,5 +83,12 @@ function desenharArmadilhas() {
     const a = fase.armadilhas[i];
     const tipo = TIPOS_ARMADILHA[a.tipo];
     if (tipo && tipo.desenhar) tipo.desenhar(a);
+    if (
+      (a.tipo === 'espinho' && a.visivel) ||
+      (a.tipo === 'espinhoDeslizante' && a.ativo) ||
+      (a.tipo === 'espinhoTeto' && a.caindo)
+    ) {
+      desenharHitbox(a, 'red');
+    }
   }
 }

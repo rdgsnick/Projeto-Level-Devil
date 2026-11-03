@@ -68,6 +68,9 @@ function desenharInimigos() {
     const inimigo = fase.inimigos[i];
     const tipo = TIPOS_INIMIGO[inimigo.tipo];
     if (tipo && tipo.desenhar) tipo.desenhar(inimigo);
+    if (tipo && tipo.desenhar && !(inimigo.tipo === 'suicida' && inimigo.explodiu)) {
+      desenharHitbox(inimigo, 'red');
+    }
   }
 
   desenharEfeitosMorte();

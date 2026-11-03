@@ -34,9 +34,20 @@ function verificarPorta() {
     porta.fugas++;
   }
 
-  if (colidiu(jogador, porta)) {
+  if (colidiu(jogador, obterHitboxPorta(porta))) {
     passarDeFase();
   }
+}
+
+function obterHitboxPorta(porta) {
+  const largura = 50;
+  const altura = 100;
+  return {
+    x: porta.x + porta.largura / 2 - largura / 2,
+    y: porta.y + porta.altura - altura,
+    largura: largura,
+    altura: altura
+  };
 }
 
 function desenharPorta(porta) {
@@ -47,15 +58,13 @@ function desenharPorta(porta) {
   const quadroAnimacao = Math.floor(performance.now() / 250);
   const imagemPortalAtual = quadroAnimacao % 2 === 0 ? imagemPortal1 : imagemPortal2;
 
-  const larguraDesenho = 50;
-  const alturaDesenho = 100;
-
-  const posicaoX = porta.x + porta.largura / 2 - larguraDesenho / 2;
-  const posicaoY = porta.y + porta.altura - alturaDesenho;
+  const hitbox = obterHitboxPorta(porta);
 
   if (imagemPronta(imagemPortalAtual)) {
-    ctx.drawImage(imagemPortalAtual, posicaoX, posicaoY, larguraDesenho, alturaDesenho);
+    ctx.drawImage(imagemPortalAtual, hitbox.x, hitbox.y, hitbox.largura, hitbox.altura);
   } else {
     desenharRetangulo(porta, '#ffd60a');
   }
+
+  desenharHitbox(hitbox, '#ffd60a');
 }

@@ -130,14 +130,7 @@ function desenharAtaqueEspada() {
   if (!jogador || jogador.morto) return;
 
   // (modo debug) mostra a hitbox em branco
-  if (MOSTRAR_HITBOX) {
-    const hitbox = obterHitboxEspada();
-    if (hitbox !== null) {
-      ctx.strokeStyle = '#ffffff';
-      ctx.lineWidth = 1;
-      ctx.strokeRect(hitbox.x, hitbox.y, hitbox.largura, hitbox.altura);
-    }
-  }
+  desenharHitbox(obterHitboxEspada(), '#ffffff');
 
   if (espada.tempo < ESPADA_DESENHO_INICIO || espada.tempo > ESPADA_DESENHO_FIM) return;
 

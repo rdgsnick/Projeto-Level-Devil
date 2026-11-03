@@ -3,9 +3,15 @@
 // =====================================================================
 // Registra as teclas pressionadas para que o loop de jogo possa consultá-las.
 window.addEventListener('keydown', function (evento) {
-  if (document.activeElement.id === 'nick') return;   // está digitando o nickname
-
   const tecla = evento.key.toLowerCase();              // normaliza letras e nomes como ArrowUp
+
+  if (evento.ctrlKey && tecla === 'f2') {
+    evento.preventDefault();
+    if (!evento.repeat) MOSTRAR_HITBOX = !MOSTRAR_HITBOX;
+    return;
+  }
+
+  if (document.activeElement.id === 'nick') return;   // está digitando o nickname
 
   // Atalho de desenvolvimento (do seu commit "Inimigos"): Ctrl+F1 passa de fase
   if (evento.ctrlKey && tecla === 'f1') {

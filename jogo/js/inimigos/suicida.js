@@ -182,9 +182,6 @@ registrarInimigo('suicida', {
     }
 
     if (MOSTRAR_HITBOX) {
-      ctx.strokeStyle = 'red';
-      ctx.lineWidth = 1;
-      ctx.strokeRect(inimigo.x, inimigo.y, inimigo.largura, inimigo.altura);
       if (!inimigo.ativo) {              // o círculo em que ela acorda
         ctx.beginPath();
         ctx.arc(inimigo.x + inimigo.largura / 2, inimigo.y + inimigo.altura / 2, inimigo.raioDeteccao, 0, Math.PI * 2);

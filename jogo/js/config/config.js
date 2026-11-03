@@ -41,7 +41,7 @@ const TEMPO_POUSO = 6;              // quantos frames dura o "amassadinho" ao ca
 const DURACAO_MORTE = 70;           // quantos frames dura a animação de morte (60 frames = 1 segundo)
 const FORCA_PULO_MORTE = 8;         // o pulinho que o gato dá quando morre
 const MORTO_AFUNDA = 0.25;          // quanto do desenho do gato morto "afunda" no chão (por causa da cauda)
-const MOSTRAR_HITBOX = false;       // true = mostra as caixas de colisão (gato em verde, espada em branco, inimigos em vermelho)
+let MOSTRAR_HITBOX = false;         // alternado com Ctrl+F2
 
 // ----- Gato: dash (tecla Q) -----
 const TECLA_DASH = 'q';

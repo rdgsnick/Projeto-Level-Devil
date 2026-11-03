@@ -2,6 +2,32 @@
 // INIMIGO VOADOR — pássaro vermelho pixel art
 // =====================================================================
 
+const PROJETIL_MODELO = { largura: 20, altura: 12 };
+
+function ajustarHitboxProjetil(projetil) {
+  const centroX = projetil.x + projetil.largura / 2;
+  const centroY = projetil.y + projetil.altura / 2;
+  const centroAnteriorX = Number.isFinite(projetil.xAnterior)
+    ? projetil.xAnterior + projetil.largura / 2
+    : null;
+  const centroAnteriorY = Number.isFinite(projetil.yAnterior)
+    ? projetil.yAnterior + projetil.altura / 2
+    : null;
+  const velocidade = Math.hypot(projetil.vx, projetil.vy) || 1;
+  const cosseno = Math.abs(projetil.vx / velocidade);
+  const seno = Math.abs(projetil.vy / velocidade);
+
+  projetil.largura = PROJETIL_MODELO.largura * cosseno + PROJETIL_MODELO.altura * seno;
+  projetil.altura = PROJETIL_MODELO.largura * seno + PROJETIL_MODELO.altura * cosseno;
+  projetil.x = centroX - projetil.largura / 2;
+  projetil.y = centroY - projetil.altura / 2;
+
+  if (centroAnteriorX !== null) {
+    projetil.xAnterior = centroAnteriorX - projetil.largura / 2;
+    projetil.yAnterior = centroAnteriorY - projetil.altura / 2;
+  }
+}
+
 registrarInimigo('voador', {
   preparar(inimigo) {
     definirPadrao(inimigo, 'largura', INIMIGO_TAMANHOS.voador.largura);
@@ -135,6 +161,7 @@ registrarInimigo('voador', {
           trilha: [],
           rebatido: false
         });
+        ajustarHitboxProjetil(inimigo.projeteis[inimigo.projeteis.length - 1]);
       }
 
       return;
@@ -176,6 +203,7 @@ registrarInimigo('voador', {
         (dy / distancia) * inimigo.velocidadeProjetil;
     }
 
+    ajustarHitboxProjetil(projetil);
     inimigo.projeteis.push(projetil);
   },
 
@@ -199,15 +227,6 @@ registrarInimigo('voador', {
       desenharProjetilVoador(inimigo.projeteis[i]);
     }
 
-    if (MOSTRAR_HITBOX) {
-      ctx.strokeStyle = 'red';
-      ctx.strokeRect(
-        inimigo.x,
-        inimigo.y,
-        inimigo.largura,
-        inimigo.altura
-      );
-    }
   },
 
   resetar(inimigo) {
@@ -305,6 +324,8 @@ function desenharProjetilVoador(projetil) {
   ctx.fillRect(-6, -1, 9, 1);
   ctx.fillRect(4, -1, 2, 2);
   ctx.restore();
+
+  desenharHitbox(projetil, projetil.rebatido ? '#69f5ff' : '#ff9f1c');
 }
 
 

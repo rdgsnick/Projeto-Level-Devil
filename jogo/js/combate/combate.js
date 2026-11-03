@@ -179,6 +179,8 @@ function rebaterProjetil(projetil) {
     projetil.vx = velocidade * jogador.virado;
     projetil.vy = 0;
   }
+
+  ajustarHitboxProjetil(projetil);
 }
 
 // Golpe pra baixo acertou um inimigo: se o gato está no ar, ele ganha um pulo extra (quique)
