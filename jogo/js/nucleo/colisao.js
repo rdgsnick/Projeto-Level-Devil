@@ -2,40 +2,42 @@
 //  COLISÃO
 // =====================================================================
 
-// Retorna true se os retângulos a e b estão se encostando.
-// (tanto o jogador quanto as plataformas e armadilhas têm x, y, largura e altura)
-function colidiu(a, b) {
-  return a.x < b.x + b.largura &&
-         a.x + a.largura > b.x &&
-         a.y < b.y + b.altura &&
-         a.y + a.altura > b.y;
+// Verifica se duas caixas retangulares se sobrepõem. Os objetos comparados
+// precisam ter x, y, largura e altura. Apenas encostar pelas bordas não conta
+// como colisão.
+function colidiu(retanguloA, retanguloB) {
+  return retanguloA.x < retanguloB.x + retanguloB.largura &&
+         retanguloA.x + retanguloA.largura > retanguloB.x &&
+         retanguloA.y < retanguloB.y + retanguloB.altura &&
+         retanguloA.y + retanguloA.altura > retanguloB.y;
 }
 
-// Devolve uma caixa menor, "encolhida" por margem px em cada lado (a original não muda).
-// Usada pra perdoar encostadinhas: o inimigo só machuca se entrar mesmo no gato.
-function encolherRetangulo(r, margem) {
+// Cria uma cópia menor do retângulo, removendo margemPx de cada lado.
+// Útil para exigir uma sobreposição mais clara antes de considerar um contato.
+function encolherRetangulo(retangulo, margemPx) {
   return {
-    x: r.x + margem,
-    y: r.y + margem,
-    largura: r.largura - margem * 2,
-    altura: r.altura - margem * 2
+    x: retangulo.x + margemPx,
+    y: retangulo.y + margemPx,
+    largura: retangulo.largura - margemPx * 2,
+    altura: retangulo.altura - margemPx * 2
   };
 }
 
-// Lista tudo em que o jogador pode pisar / bater
+// Reúne as plataformas e armadilhas que são sólidas neste momento.
+// O movimento do jogador usa essa lista para pousar e bloquear deslocamentos.
 function listarSolidos() {
-  const lista = [];
+  const solidos = [];
 
-  // plataformas da fase
+  // Plataformas sempre fazem parte dos sólidos.
   for (let i = 0; i < fase.plataformas.length; i++) {
-    lista.push(fase.plataformas[i]);
+    solidos.push(fase.plataformas[i]);
   }
 
-  // armadilhas que, neste momento, são sólidas (chão que some, parede...)
+  // Algumas armadilhas só são sólidas em determinados momentos.
   const armadilhasSolidas = listarArmadilhasSolidas();
   for (let i = 0; i < armadilhasSolidas.length; i++) {
-    lista.push(armadilhasSolidas[i]);
+    solidos.push(armadilhasSolidas[i]);
   }
 
-  return lista;
+  return solidos;
 }

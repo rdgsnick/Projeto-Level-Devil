@@ -2,7 +2,7 @@
 //  PRINCIPAL: o "coração" do jogo (carregue este arquivo SEMPRE por último)
 // =====================================================================
 
-// Roda uma vez por frame (uns 60 por segundo)
+// Atualiza os sistemas do jogo na ordem necessária em cada frame.
 function atualizarJogo() {
   // A fase fica PARADA (inimigos, tiros e armadilhas congelados) até o gato se mexer
   if (!faseIniciada && !jogador.morto && jogadorComecouAMexer()) iniciarFase();
@@ -22,7 +22,7 @@ function atualizarJogo() {
   verificarPorta();
 }
 
-// Retorna true se o jogador morreu neste frame
+// Verifica todas as condições de morte e retorna true se alguma delas ocorreu.
 function verificarMorte() {
   // Caiu no buraco
   if (jogador.y > ALTURA_TELA) {
@@ -45,7 +45,8 @@ function verificarMorte() {
   return false;
 }
 
-// Loop principal: roda de novo a cada frame enquanto "jogando" for true
+// Loop principal: atualiza e desenha um frame e agenda o próximo enquanto
+// a partida estiver ativa.
 function loopDoJogo() {
   if (!jogando) return;
 

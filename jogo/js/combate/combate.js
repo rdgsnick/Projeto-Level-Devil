@@ -66,6 +66,8 @@ function resolverProjeteisRebatidos() {
   }
 }
 
+// Verifica se o projétil rebateu e cruzou o inimigo entre dois frames.
+// A checagem do caminho evita que projéteis rápidos atravessem alvos pequenos.
 function projetilAcertaInimigo(projetil, inimigo) {
   const tipo = TIPOS_INIMIGO[inimigo.tipo];
   const hitbox = tipo && tipo.hitboxProjetil ? tipo.hitboxProjetil(inimigo) : inimigo;
@@ -110,6 +112,7 @@ function projetilAcertaInimigo(projetil, inimigo) {
   return saida >= 0 && entrada <= 1;
 }
 
+// Aplica uma vez o dano de cada explosão a outros inimigos que estejam na área.
 function resolverExplosoesSuicidas() {
   const explosoes = [];
 

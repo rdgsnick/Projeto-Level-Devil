@@ -1,143 +1,207 @@
-// =====================================================================
-//  TRANSIÇÃO ENTRE FASES (estilo MOSAICO)
-//  1) "fechando": quadradinhos pretos/vermelhos vão crescendo pela tela em ordem aleatória
-//  2) "cartao":   tela preta com "FASE X" entrando pela esquerda e o nome pela direita
-//  3) "abrindo":  os quadradinhos encolhem e somem, mostrando a fase nova
-//  Durante a transição o jogo fica parado (nada se mexe, a espada não bate).
-//  O tempo da transição NÃO conta pontos (a fase nova nasce congelada).
-// =====================================================================
-const TRANSICAO_FECHAR = 40;    // frames do mosaico fechando (60 frames = 1 segundo)
-const TRANSICAO_CARTAO = 75;    // frames mostrando "FASE X"
-const TRANSICAO_ABRIR = 40;     // frames do mosaico abrindo
-const TRANSICAO_TAMANHO = 50;   // tamanho de cada quadradinho em pixels
+// A transição entre fases tem três etapas:
+// 1. "fechando": quadrados coloridos crescem até cobrir a tela.
+// 2. "cartao": a tela fica escura e mostra o número e o nome da nova fase.
+// 3. "abrindo": os quadrados encolhem para revelar a nova fase.
+//
+// O loop principal atualiza a transição em vez de atualizar o jogo enquanto
+// ela está ativa. Assim, os personagens e os objetos ficam parados durante
+// a animação.
+//
+// Este arquivo usa dados e funções globais do jogo: ctx desenha no canvas;
+// LARGURA_TELA e ALTURA_TELA definem seu tamanho; FASES, numeroFase e fase
+// identificam as fases; carregarFase e terminarJogo controlam o fluxo do jogo.
+
+// Durações em frames. Com uma atualização de 60 frames por segundo,
+// 60 frames correspondem aproximadamente a um segundo.
+const TRANSICAO_FECHAR = 40;   // duração da etapa em que o mosaico cobre a tela
+const TRANSICAO_CARTAO = 75;   // duração da exibição do cartão da fase
+const TRANSICAO_ABRIR = 40;    // duração da etapa em que o mosaico revela a tela
+const TRANSICAO_TAMANHO = 50;  // largura e altura de cada quadrado, em pixels
 
 const transicao = {
-  ativa: false,
-  etapa: '',          // 'fechando', 'cartao' ou 'abrindo'
-  tempo: 0,           // frames dentro da etapa atual
-  proximaFase: 0,     // índice da fase que vai carregar (FASES.length = acabou o jogo)
-  pontosGanhos: 0,    // pontos da fase que acabou de ser concluída (aparece no cartão)
-  quadrados: []       // cada um: { x, y, atraso, cor }
+  ativa: false,       // indica se a animação está acontecendo
+  etapa: '',          // etapa atual: 'fechando', 'cartao' ou 'abrindo'
+  tempo: 0,           // frames já passados na etapa atual
+  proximaFase: 0,     // índice da fase a carregar; FASES.length indica que o jogo terminou
+  pontosGanhos: 0,    // pontos obtidos na fase concluída, exibidos no cartão
+  quadrados: []       // mosaico; cada quadrado tem posição (x, y), atraso e cor
 };
 
-// Cria a grade de quadradinhos, cada um com um atraso aleatório (0 a 0.5)
+// Monta uma grade de quadrados que cobre a tela. Cada quadrado recebe um
+// atraso aleatório para que eles não cresçam todos ao mesmo tempo.
 function criarQuadradosDaTransicao() {
-  const t = TRANSICAO_TAMANHO;
-  const lista = [];
-  for (let y = 0; y < ALTURA_TELA; y += t) {
-    for (let x = 0; x < LARGURA_TELA; x += t) {
-      lista.push({
-        x: x,
-        y: y,
-        atraso: Math.random() * 0.5,
-        cor: Math.random() < 0.25 ? '#8b1e2b' : '#000'      // alguns vermelho-escuros
+  const tamanhoQuadrado = TRANSICAO_TAMANHO;
+  const quadrados = [];
+
+  // Avança de quadrado em quadrado pelas linhas e colunas da tela.
+  for (let y = 0; y < ALTURA_TELA; y += tamanhoQuadrado) {
+    for (let x = 0; x < LARGURA_TELA; x += tamanhoQuadrado) {
+      quadrados.push({
+        x: x, // posição horizontal do canto superior esquerdo
+        y: y, // posição vertical do canto superior esquerdo
+        atraso: Math.random() * 0.5, // atraso normalizado entre 0 e 0.5 do progresso
+        cor: Math.random() < 0.25 ? '#8b1e2b' : '#000' // 25% são vermelho-escuros
       });
     }
   }
-  transicao.quadrados = lista;
+
+  // Guarda a grade no estado para ser usada durante o desenho da animação.
+  transicao.quadrados = quadrados;
 }
 
-// Começa a transição. Chamada pelo passarDeFase().
+// Inicia a animação para a próxima fase. É chamada pelo fluxo de troca de fase.
 function iniciarTransicao(proximaFase, pontosGanhos) {
+  // Ignora chamadas repetidas enquanto uma transição já está em andamento.
   if (transicao.ativa) return;
+
   transicao.ativa = true;
   transicao.etapa = 'fechando';
   transicao.tempo = 0;
   transicao.proximaFase = proximaFase;
   transicao.pontosGanhos = pontosGanhos;
+
+  // Cria os quadrados e seus atrasos para o mosaico que fechará a tela.
   criarQuadradosDaTransicao();
 }
 
-// Roda uma vez por frame no lugar do atualizarJogo() enquanto a transição está ativa
+// Atualiza a máquina de etapas da transição. O loop principal chama esta
+// função uma vez por frame no lugar da atualização normal do jogo.
 function atualizarTransicao() {
   transicao.tempo++;
 
+  // Quando o mosaico cobre a tela, já é seguro trocar o conteúdo da fase.
   if (transicao.etapa === 'fechando' && transicao.tempo >= TRANSICAO_FECHAR) {
-    if (transicao.proximaFase >= FASES.length) {      // era a última fase
+    // Um índice além da última fase significa que não há outra fase para carregar.
+    if (transicao.proximaFase >= FASES.length) {
       transicao.ativa = false;
       terminarJogo();
       return;
     }
-    carregarFase(transicao.proximaFase);              // a tela está coberta, dá pra trocar
+
+    carregarFase(transicao.proximaFase);
     transicao.etapa = 'cartao';
     transicao.tempo = 0;
+  // Depois do cartão, sorteia novos atrasos e começa a revelar a fase.
   } else if (transicao.etapa === 'cartao' && transicao.tempo >= TRANSICAO_CARTAO) {
-    criarQuadradosDaTransicao();                      // novos atrasos pra abertura ser diferente
+    criarQuadradosDaTransicao();
     transicao.etapa = 'abrindo';
     transicao.tempo = 0;
+  // Ao terminar a abertura, devolve o controle ao loop normal do jogo.
   } else if (transicao.etapa === 'abrindo' && transicao.tempo >= TRANSICAO_ABRIR) {
     transicao.ativa = false;
     transicao.etapa = '';
   }
 }
 
-// Segura o valor entre 0 e 1
-function limitar01(v) {
-  return Math.max(0, Math.min(1, v));
+// Mantém um número dentro do intervalo de 0 a 1.
+// Valores menores viram 0; valores maiores viram 1.
+function limitar01(valor) {
+  return Math.max(0, Math.min(1, valor));
 }
 
-// Começa rápido e termina devagar
-function suavizarSaida(t) {
-  return 1 - Math.pow(1 - t, 3);
+// Aplica uma curva de animação: o movimento começa rápido e desacelera
+// suavemente até parar. O parâmetro esperado está entre 0 e 1.
+function suavizarSaida(progresso) {
+  return 1 - Math.pow(1 - progresso, 3);
 }
 
-// progresso: 0 = nenhum quadrado, 1 = tela toda coberta
+// Desenha o mosaico de acordo com um progresso entre 0 e 1:
+// 0 não desenha quadrados; 1 cobre a tela inteira.
 function desenharMosaico(progresso) {
-  const t = TRANSICAO_TAMANHO;
-  for (let i = 0; i < transicao.quadrados.length; i++) {
-    const q = transicao.quadrados[i];
-    const crescimento = suavizarSaida(limitar01((progresso - q.atraso) / 0.5));
-    if (crescimento <= 0) continue;
+  const tamanhoQuadrado = TRANSICAO_TAMANHO;
 
-    const lado = Math.ceil(t * crescimento) + 1;          // +1 evita frestinhas entre os quadrados
-    ctx.fillStyle = q.cor;
-    ctx.fillRect(q.x + (t - lado) / 2, q.y + (t - lado) / 2, lado, lado);
+  for (let indiceQuadrado = 0; indiceQuadrado < transicao.quadrados.length; indiceQuadrado++) {
+    const quadrado = transicao.quadrados[indiceQuadrado];
+
+    // Cada quadrado começa a crescer depois do seu atraso aleatório.
+    const progressoDoQuadrado = limitar01((progresso - quadrado.atraso) / 0.5);
+    const fatorDeCrescimento = suavizarSaida(progressoDoQuadrado);
+    if (fatorDeCrescimento <= 0) continue;
+
+    // O pixel extra evita frestas causadas por arredondamentos entre quadrados.
+    const ladoDoQuadrado = Math.ceil(tamanhoQuadrado * fatorDeCrescimento) + 1;
+    const deslocamentoInterno = (tamanhoQuadrado - ladoDoQuadrado) / 2;
+
+    ctx.fillStyle = quadrado.cor;
+    ctx.fillRect(
+      quadrado.x + deslocamentoInterno,
+      quadrado.y + deslocamentoInterno,
+      ladoDoQuadrado,
+      ladoDoQuadrado
+    );
   }
 }
 
+// Desenha o cartão enquanto a tela está coberta: número da fase, nome,
+// posição da fase na sequência e pontos ganhos na fase anterior.
 function desenharCartaoDaFase() {
   ctx.fillStyle = '#000';
   ctx.fillRect(0, 0, LARGURA_TELA, ALTURA_TELA);
 
-  // Entrada (primeiros 20 frames) e saída (últimos 15 frames) dos textos
-  const entrada = suavizarSaida(limitar01(transicao.tempo / 20));
-  const saida = limitar01((transicao.tempo - (TRANSICAO_CARTAO - 15)) / 15);
-  const alfa = 1 - saida;
+  // Os textos entram nos primeiros 20 frames e começam a desaparecer
+  // nos últimos 15 frames do cartão.
+  const progressoDeEntrada = suavizarSaida(limitar01(transicao.tempo / 20));
+  const progressoDeSaida = limitar01((transicao.tempo - (TRANSICAO_CARTAO - 15)) / 15);
+  const opacidade = 1 - progressoDeSaida;
 
-  const meio = LARGURA_TELA / 2;
-  const deslocamento = (1 - entrada) * 250;               // quanto falta pra chegar no centro
+  const centroDaTelaX = LARGURA_TELA / 2;
+  const deslocamentoDoTexto = (1 - progressoDeEntrada) * 250;
 
   ctx.save();
-  ctx.globalAlpha = alfa;
+  ctx.globalAlpha = opacidade;
   ctx.textAlign = 'center';
 
-  // "FASE X" entra pela esquerda
+  // O título começa à esquerda do centro e desliza até o centro.
   ctx.fillStyle = '#fff';
   ctx.font = 'bold 56px sans-serif';
-  ctx.fillText('FASE ' + (numeroFase + 1), meio - deslocamento, ALTURA_TELA / 2 - 10);
+  ctx.fillText(
+    'FASE ' + (numeroFase + 1),
+    centroDaTelaX - deslocamentoDoTexto,
+    ALTURA_TELA / 2 - 10
+  );
 
-  // O nome da fase entra pela direita
+  // O nome começa à direita do centro e desliza na direção oposta.
   ctx.fillStyle = '#e63946';
   ctx.font = '24px sans-serif';
-  ctx.fillText(fase.nome, meio + deslocamento, ALTURA_TELA / 2 + 30);
+  ctx.fillText(
+    fase.nome,
+    centroDaTelaX + deslocamentoDoTexto,
+    ALTURA_TELA / 2 + 30
+  );
 
-  // Detalhes embaixo aparecem por último
-  ctx.globalAlpha = alfa * entrada;
+  // Os detalhes inferiores aparecem junto com a entrada e também desaparecem
+  // junto com o restante do cartão.
+  ctx.globalAlpha = opacidade * progressoDeEntrada;
   ctx.fillStyle = '#888';
   ctx.font = '16px sans-serif';
-  ctx.fillText((numeroFase + 1) + ' / ' + FASES.length, meio, ALTURA_TELA / 2 + 60);
-  ctx.fillText('+' + transicao.pontosGanhos + ' pontos', meio, ALTURA_TELA / 2 + 85);
+  ctx.fillText(
+    (numeroFase + 1) + ' / ' + FASES.length,
+    centroDaTelaX,
+    ALTURA_TELA / 2 + 60
+  );
+  ctx.fillText(
+    '+' + transicao.pontosGanhos + ' pontos',
+    centroDaTelaX,
+    ALTURA_TELA / 2 + 85
+  );
+
+  // Restaura as configurações anteriores do contexto do canvas para não
+  // afetar os desenhos feitos depois do cartão.
   ctx.restore();
 }
 
-// Desenha por CIMA do jogo (chamada no loopDoJogo, depois do desenharJogo)
+// Desenha a camada da transição por cima do jogo. O loop principal chama
+// esta função depois de desenhar a cena normal.
 function desenharTransicao() {
   if (!transicao.ativa) return;
 
+  // Ao fechar, o progresso vai de 0 a 1 e cobre a tela.
   if (transicao.etapa === 'fechando') {
     desenharMosaico(transicao.tempo / TRANSICAO_FECHAR);
+  // Durante o cartão, o mosaico já cobre a tela e o cartão fica visível.
   } else if (transicao.etapa === 'cartao') {
     desenharCartaoDaFase();
+  // Ao abrir, o progresso do mosaico vai de 1 a 0 e revela a nova fase.
   } else if (transicao.etapa === 'abrindo') {
     desenharMosaico(1 - transicao.tempo / TRANSICAO_ABRIR);
   }

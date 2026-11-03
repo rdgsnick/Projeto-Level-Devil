@@ -1,30 +1,33 @@
 // =====================================================================
 //  TECLADO
 // =====================================================================
-window.addEventListener('keydown', function (e) {
+// Registra as teclas pressionadas para que o loop de jogo possa consultá-las.
+window.addEventListener('keydown', function (evento) {
   if (document.activeElement.id === 'nick') return;   // está digitando o nickname
 
-  const tecla = e.key.toLowerCase();                   // 'ArrowUp' vira 'arrowup', 'D' vira 'd'
+  const tecla = evento.key.toLowerCase();              // normaliza letras e nomes como ArrowUp
 
   // Atalho de desenvolvimento (do seu commit "Inimigos"): Ctrl+F1 passa de fase
-  if (e.ctrlKey && tecla === 'f1') {
-    e.preventDefault();
-    if (!e.repeat && jogando && !jogador.morto) passarDeFase();
+  if (evento.ctrlKey && tecla === 'f1') {
+    evento.preventDefault();
+    if (!evento.repeat && jogando && !jogador.morto) passarDeFase();
     return;
   }
 
-  if (tecla === 'r' && !e.repeat) reiniciarFase();
+  if (tecla === 'r' && !evento.repeat) reiniciarFase();
 
   // Impede a página de rolar com espaço e setas
-  if (tecla === ' ' || tecla.startsWith('arrow')) e.preventDefault();
+  if (tecla === ' ' || tecla.startsWith('arrow')) evento.preventDefault();
 
   teclas[tecla] = true;
 });
 
-window.addEventListener('keyup', function (e) {
-  teclas[e.key.toLowerCase()] = false;
+// Marca a tecla como solta quando o navegador recebe o evento keyup.
+window.addEventListener('keyup', function (evento) {
+  teclas[evento.key.toLowerCase()] = false;
 });
-// Se a janela perder o foco (ex: alt+tab), solta todas as teclas pra o gato não ficar "preso" andando ou agachado
+// Se a janela perder o foco, libera todas as teclas para evitar movimento
+// contínuo quando o usuário retorna ao jogo.
 window.addEventListener('blur', function () {
   for (const tecla in teclas) {
     teclas[tecla] = false;

@@ -1,9 +1,10 @@
 // =====================================================================
 //  DESENHO NA TELA
 // =====================================================================
-function desenharRetangulo(r, cor) {
+// Desenha um retângulo com a mesma geometria usada pelo sistema de colisão.
+function desenharRetangulo(retangulo, cor) {
   ctx.fillStyle = cor;
-  ctx.fillRect(r.x, r.y, r.largura, r.altura);
+  ctx.fillRect(retangulo.x, retangulo.y, retangulo.largura, retangulo.altura);
 }
 
 // Imagem de fundo da fase (a fase pode ter a sua com  cenario: 'img/cenario/outro.jpg')
@@ -17,7 +18,7 @@ function desenharCenario() {
   }
 }
 
-// Chão de terra com grama em cima
+// Desenha uma plataforma de terra e duas faixas verdes que formam a grama.
 function desenharChao(r) {
   ctx.fillStyle = '#7a4b2a';
   ctx.fillRect(r.x, r.y, r.largura, r.altura);
@@ -45,7 +46,8 @@ const PEDRA_LARGURA_PEDRA = [8, 16];                    // largura de cada pedra
 
 const PEDRAS_PRONTAS = {};
 
-// Sorteio com semente: o mesmo bloco sempre sai igual (não fica piscando)
+// Cria um gerador pseudoaleatório repetível: a mesma semente produz a mesma
+// sequência, mantendo o padrão de pedra estável entre os frames.
 function sorteadorComSemente(semente) {
   let n = semente >>> 0;
   return function () {
@@ -57,82 +59,107 @@ function sorteadorComSemente(semente) {
   };
 }
 
-function montarPedra(r) {
-  const U = PEDRA_PIXEL;
-  const cols = Math.max(1, Math.ceil(r.largura / U));
-  const linhas = Math.max(1, Math.ceil(r.altura / U));
-  const tela = document.createElement('canvas');
-  tela.width = cols * U;
-  tela.height = linhas * U;
-  const c = tela.getContext('2d');
-  const sorteio = sorteadorComSemente(Math.round(r.x * 7 + r.y * 13 + r.largura * 17 + r.altura * 19));
-  const entre = (par) => par[0] + Math.floor(sorteio() * (par[1] - par[0] + 1));
-  const quadrado = (x, y, w, h, cor) => { c.fillStyle = cor; c.fillRect(x * U, y * U, w * U, h * U); };
+// Monta a textura pixelada de um bloco numa tela auxiliar, para reutilizá-la
+// sem reconstruir o mosaico de pedras em cada frame.
+function montarPedra(retangulo) {
+  const unidadePixel = PEDRA_PIXEL;
+  const colunas = Math.max(1, Math.ceil(retangulo.largura / unidadePixel));
+  const linhas = Math.max(1, Math.ceil(retangulo.altura / unidadePixel));
+  const canvasPedra = document.createElement('canvas');
+  canvasPedra.width = colunas * unidadePixel;
+  canvasPedra.height = linhas * unidadePixel;
+  const contextoPedra = canvasPedra.getContext('2d');
+  const sortear = sorteadorComSemente(Math.round(
+    retangulo.x * 7 + retangulo.y * 13 + retangulo.largura * 17 + retangulo.altura * 19
+  ));
+  const inteiroAleatorioEntre = (intervalo) =>
+    intervalo[0] + Math.floor(sortear() * (intervalo[1] - intervalo[0] + 1));
+  const desenharBloco = (x, y, largura, altura, cor) => {
+    contextoPedra.fillStyle = cor;
+    contextoPedra.fillRect(
+      x * unidadePixel,
+      y * unidadePixel,
+      largura * unidadePixel,
+      altura * unidadePixel
+    );
+  };
 
   // fundo (cor do contorno: as frestas entre as pedras ficam escuras)
-  quadrado(0, 0, cols, linhas, PEDRA_CONTORNO);
+  desenharBloco(0, 0, colunas, linhas, PEDRA_CONTORNO);
 
   // fileiras de pedras, cada uma começando num ponto diferente (como um muro de pedra solta)
   let y = 0;
   while (y < linhas) {
-    const alt = Math.min(entre(PEDRA_ALTURA_FILEIRA), linhas - y);
-    let x = -Math.floor(sorteio() * PEDRA_LARGURA_PEDRA[1]);
-    while (x < cols) {
-      const larg = entre(PEDRA_LARGURA_PEDRA);
+    const alturaFileira = Math.min(inteiroAleatorioEntre(PEDRA_ALTURA_FILEIRA), linhas - y);
+    let x = -Math.floor(sortear() * PEDRA_LARGURA_PEDRA[1]);
+    while (x < colunas) {
+      const larguraPedra = inteiroAleatorioEntre(PEDRA_LARGURA_PEDRA);
       const x0 = Math.max(x, 0);
-      const x1 = Math.min(x + larg, cols);
+      const x1 = Math.min(x + larguraPedra, colunas);
       // 1 "pixel" de fresta em volta de cada pedra
-      const px = x0 + (x < 0 ? 0 : 1), py = y + 1;
-      const pw = x1 - px - 0, ph = alt - 1;
-      if (pw > 1 && ph > 1) {
-        quadrado(px, py, pw, ph, PEDRA_CORES[Math.floor(sorteio() * PEDRA_CORES.length)]);
-        quadrado(px, py, pw, 1, PEDRA_LUZ);             // luz em cima
-        quadrado(px, py, 1, ph, PEDRA_LUZ);             // luz na esquerda
-        quadrado(px, py + ph - 1, pw, 1, PEDRA_SOMBRA); // sombra embaixo
-        quadrado(px + pw - 1, py, 1, ph, PEDRA_SOMBRA); // sombra na direita
-        if (sorteio() < 0.35 && pw > 5 && ph > 3) {      // um riscadinho de brilho, como na pedra do desenho
-          quadrado(px + 2, py + 2, Math.min(3, pw - 4), 1, PEDRA_LUZ);
+      const pedraX = x0 + (x < 0 ? 0 : 1);
+      const pedraY = y + 1;
+      const larguraInterior = x1 - pedraX;
+      const alturaInterior = alturaFileira - 1;
+      if (larguraInterior > 1 && alturaInterior > 1) {
+        desenharBloco(
+          pedraX,
+          pedraY,
+          larguraInterior,
+          alturaInterior,
+          PEDRA_CORES[Math.floor(sortear() * PEDRA_CORES.length)]
+        );
+        desenharBloco(pedraX, pedraY, larguraInterior, 1, PEDRA_LUZ); // luz em cima
+        desenharBloco(pedraX, pedraY, 1, alturaInterior, PEDRA_LUZ); // luz à esquerda
+        desenharBloco(pedraX, pedraY + alturaInterior - 1, larguraInterior, 1, PEDRA_SOMBRA);
+        desenharBloco(pedraX + larguraInterior - 1, pedraY, 1, alturaInterior, PEDRA_SOMBRA);
+        if (sortear() < 0.35 && larguraInterior > 5 && alturaInterior > 3) {
+          desenharBloco(pedraX + 2, pedraY + 2, Math.min(3, larguraInterior - 4), 1, PEDRA_LUZ);
         }
       }
-      x += larg;
+      x += larguraPedra;
     }
-    y += alt;
+    y += alturaFileira;
   }
 
   // musgo no topo, com algumas gotinhas escorrendo
-  for (let i = 0; i < cols; i++) {
-    const fundo = 1 + Math.floor(sorteio() * 2) + (sorteio() < 0.22 ? 2 + Math.floor(sorteio() * 2) : 0);
-    quadrado(i, 0, 1, Math.min(fundo + 1, linhas), PEDRA_MUSGO[0]);
-    if (sorteio() < 0.5) quadrado(i, Math.min(fundo, linhas - 1), 1, 1, PEDRA_MUSGO[1]);
+  for (let coluna = 0; coluna < colunas; coluna++) {
+    const profundidadeMusgo = 1 + Math.floor(sortear() * 2) +
+      (sortear() < 0.22 ? 2 + Math.floor(sortear() * 2) : 0);
+    desenharBloco(coluna, 0, 1, Math.min(profundidadeMusgo + 1, linhas), PEDRA_MUSGO[0]);
+    if (sortear() < 0.5) {
+      desenharBloco(coluna, Math.min(profundidadeMusgo, linhas - 1), 1, 1, PEDRA_MUSGO[1]);
+    }
   }
 
   // contorno escuro em volta do bloco todo
-  quadrado(0, linhas - 1, cols, 1, PEDRA_CONTORNO);
-  quadrado(0, 0, 1, linhas, PEDRA_CONTORNO);
-  quadrado(cols - 1, 0, 1, linhas, PEDRA_CONTORNO);
+  desenharBloco(0, linhas - 1, colunas, 1, PEDRA_CONTORNO);
+  desenharBloco(0, 0, 1, linhas, PEDRA_CONTORNO);
+  desenharBloco(colunas - 1, 0, 1, linhas, PEDRA_CONTORNO);
 
-  return tela;
+  return canvasPedra;
 }
 
-function desenharPedra(r) {
-  const chave = r.largura + 'x' + r.altura + '@' + r.x + ',' + r.y;
-  if (!PEDRAS_PRONTAS[chave]) PEDRAS_PRONTAS[chave] = montarPedra(r);
+// Desenha o bloco de pedra com uma textura armazenada em cache.
+function desenharPedra(retangulo) {
+  const chave = retangulo.largura + 'x' + retangulo.altura + '@' + retangulo.x + ',' + retangulo.y;
+  if (!PEDRAS_PRONTAS[chave]) PEDRAS_PRONTAS[chave] = montarPedra(retangulo);
 
   ctx.save();
   ctx.beginPath();
-  ctx.rect(r.x, r.y, r.largura, r.altura);
+  ctx.rect(retangulo.x, retangulo.y, retangulo.largura, retangulo.altura);
   ctx.clip();                                   // corta o que passar do bloco (largura que não divide certinho)
   ctx.imageSmoothingEnabled = false;            // mantém o pixel art nítido
-  ctx.drawImage(PEDRAS_PRONTAS[chave], r.x, r.y);
+  ctx.drawImage(PEDRAS_PRONTAS[chave], retangulo.x, retangulo.y);
   ctx.restore();
 }
 
 // Plataforma da fase: terra com grama, ou pedra se tiver  estilo: 'pedra'
-function desenharPlataforma(p) {
-  if (p.estilo === 'pedra') {
-    desenharPedra(p);
+function desenharPlataforma(plataforma) {
+  if (plataforma.estilo === 'pedra') {
+    desenharPedra(plataforma);
   } else {
-    desenharChao(p);
+    desenharChao(plataforma);
   }
 }
 
@@ -196,6 +223,7 @@ function desenharEspinhosParaBaixo(a) {
   }
 }
 
+// Escurece a fase com uma janela circular transparente em volta do jogador.
 function desenharEscuridao() {
   const centroX = jogador.x + jogador.largura / 2;
   const centroY = jogador.y + jogador.altura / 2;
@@ -206,6 +234,7 @@ function desenharEscuridao() {
   ctx.fillRect(0, 0, LARGURA_TELA, ALTURA_TELA);
 }
 
+// Desenha o HUD, pausando o cronômetro visual enquanto a fase está congelada.
 function desenharTextos() {
   const agora = faseIniciada ? performance.now() : congeladoDesde;      // parada = o relógio não anda
   const segundos = ((agora - inicioDaFase) / 1000).toFixed(1);

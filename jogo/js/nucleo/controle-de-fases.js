@@ -1,8 +1,10 @@
 // =====================================================================
 //  CONTROLE DE FASES: carregar, morrer, reiniciar e passar de fase
 // =====================================================================
+// Cópia-base usada para restaurar os inimigos ao renascer ou reiniciar.
 let inimigosOriginaisFase = [];
 
+// Repõe a fila inicial de inimigos e prepara os primeiros que cabem na tela.
 function restaurarListaOriginalDeInimigos() {
   fase.inimigos = [];
   fase.filaInimigos = JSON.parse(
@@ -11,12 +13,13 @@ function restaurarListaOriginalDeInimigos() {
 
   prepararInimigos();
 }
-function carregarFase(numero) {
-  numeroFase = numero;
+// Cria o estado jogável da fase indicada e reinicializa seus sistemas.
+function carregarFase(indiceFase) {
+  numeroFase = indiceFase;
   pontosInimigosPendentes = 0;
 
   // Faz uma CÓPIA da fase pra não estragar a original da lista FASES
-  fase = JSON.parse(JSON.stringify(FASES[numero]));
+  fase = JSON.parse(JSON.stringify(FASES[indiceFase]));
 
   // Valores padrão da fase
   definirPadrao(fase, 'inicio', { x: 40, y: 350 });
@@ -44,12 +47,13 @@ function carregarFase(numero) {
   // Monta a fila de inimigos da fase e coloca os primeiros na tela (veja inimigos/geracao.js)
   gerarInimigosAleatorios();
 
-// Guarda a lista exata de inimigos desta fase.
-inimigosOriginaisFase = JSON.parse(
-  JSON.stringify(fase.filaInimigos)
-);
+  // Guarda a configuração original para que as próximas restaurações
+  // não dependam da fila já consumida durante a partida.
+  inimigosOriginaisFase = JSON.parse(
+    JSON.stringify(fase.filaInimigos)
+  );
 
-prepararInimigos();
+  prepararInimigos();
 
   mortesNaFase = 0;
   inicioDaFase = performance.now();
@@ -139,6 +143,7 @@ function reiniciarFase() {
 }
 function passarDeFase() {
   if (transicao.ativa) return;      // já está passando de fase
+  // Calcula os pontos base descontando o tempo e as mortes desta fase.
   const segundos = (performance.now() - inicioDaFase) / 1000;
   let pontos = PONTOS_POR_FASE - segundos * PERDA_POR_SEGUNDO - mortesNaFase * PERDA_POR_MORTE;
   pontos = Math.round(pontos);

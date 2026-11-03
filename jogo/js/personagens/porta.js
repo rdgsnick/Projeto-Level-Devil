@@ -9,7 +9,7 @@ function prepararPorta(porta) {
   definirPadrao(porta, 'foge', []);
   porta.xInicial = porta.x;
   porta.yInicial = porta.y;
-  porta.fugas = 0;            // quantas vezes a porta já fugiu
+  porta.fugas = 0; // quantas vezes a porta já mudou de lugar
 }
 
 // Chamada quando o jogador morre: a porta volta pro lugar de origem
@@ -25,9 +25,9 @@ function verificarPorta() {
   // A porta foge se o jogador chegar a menos de 90px dela
   const centroJogador = jogador.x + jogador.largura / 2;
   const centroPorta = porta.x + porta.largura / 2;
-  const distancia = Math.abs(centroJogador - centroPorta);
+  const distanciaEntreCentros = Math.abs(centroJogador - centroPorta);
 
-  if (porta.fugas < porta.foge.length && distancia < 90) {
+  if (porta.fugas < porta.foge.length && distanciaEntreCentros < 90) {
     const novoLugar = porta.foge[porta.fugas];
     porta.x = novoLugar.x;
     porta.y = novoLugar.y;
@@ -40,20 +40,21 @@ function verificarPorta() {
 }
 
 function desenharPorta(porta) {
-  var portal1 = obterImagem('img/porta/portal_frame_1.png');
-  var portal2 = obterImagem('img/porta/portal_frame_2.png');
+  // Alterna entre dois quadros para animar o portal sem spritesheet.
+  const imagemPortal1 = obterImagem('img/porta/portal_frame_1.png');
+  const imagemPortal2 = obterImagem('img/porta/portal_frame_2.png');
 
-  var tempo = Math.floor(performance.now() / 250);
-  var portalAtual = tempo % 2 === 0 ? portal1 : portal2;
+  const quadroAnimacao = Math.floor(performance.now() / 250);
+  const imagemPortalAtual = quadroAnimacao % 2 === 0 ? imagemPortal1 : imagemPortal2;
 
-  var largura = 50;
-  var altura = 100;
+  const larguraDesenho = 50;
+  const alturaDesenho = 100;
 
-  var x = porta.x + porta.largura / 2 - largura / 2;
-  var y = porta.y + porta.altura - altura;
+  const posicaoX = porta.x + porta.largura / 2 - larguraDesenho / 2;
+  const posicaoY = porta.y + porta.altura - alturaDesenho;
 
-  if (imagemPronta(portalAtual)) {
-    ctx.drawImage(portalAtual, x, y, largura, altura);
+  if (imagemPronta(imagemPortalAtual)) {
+    ctx.drawImage(imagemPortalAtual, posicaoX, posicaoY, larguraDesenho, alturaDesenho);
   } else {
     desenharRetangulo(porta, '#ffd60a');
   }

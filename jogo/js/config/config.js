@@ -17,7 +17,7 @@ const FORCA_PULO_PADRAO = 11;     // quanto maior, mais alto ele pula
 const PONTOS_POR_FASE = 1000;     // pontos de quem passa instantaneamente
 const PERDA_POR_SEGUNDO = 10;     // pontos perdidos por segundo na fase
 const PERDA_POR_MORTE = 50;       // pontos perdidos por morte na fase
-const PONTOS_MINIMOS_POR_FASE = 100;
+const PONTOS_MINIMOS_POR_FASE = 100; // pontuação mínima garantida ao concluir uma fase
 const PONTOS_POR_INIMIGO = 300;   // pontos confirmados ao concluir a fase
 
 // ----- Cenário -----
@@ -101,7 +101,7 @@ const CORREDOR_ATAQUE_GOLPE = 10;        // frames golpeando (ataque2)
 const CORREDOR_ATAQUE_RECARGA = 40;      // frames até poder balançar o taco de novo
 const CORREDOR_GRAVIDADE = 0.5;          // se o chão sumir debaixo dele, o corredor cai com essa gravidade
 const CORREDOR_QUEDA_MAXIMA = 10;        // velocidade máxima da queda
-const VELOCIDADE_SUICIDA = 1.8;
+const VELOCIDADE_SUICIDA = 1.8; // velocidade inicial da bomba antes do multiplicador progressivo
 const INTERVALO_DISPARO_VOADOR = 110;            // frames entre um tiro e outro do voador
 const INTERVALO_DISPARO_MINIMO = 35;             // o voador nunca atira mais rápido que isso
 
